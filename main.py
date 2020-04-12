@@ -10,7 +10,9 @@ from plot import *
 symbol_list = \
 ['SPYG', \
 'AAOI', \
-'BA' \
+'BA', \
+'NBEV', \
+'CRMD', \
 ]
 
 if __name__ == "__main__":

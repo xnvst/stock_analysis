@@ -1,5 +1,7 @@
 from alpha_vantage.timeseries import TimeSeries
 import operator
+import pandas as pd
+from pathlib import Path
 
 def get_quotes(name, outputsize = 'compact'):
     key = 'B478G0MJQCKU8MKM'
@@ -36,6 +38,14 @@ def collect_quote(symbol, outputsize = 'compact'):
         symbol_file = 'data/' + symbol + '_full.csv'
     else:
         symbol_file = 'data/' + symbol + '.csv'
-    data = get_quotes('AAPL')
-    write_csv(symbol_file, data)
+
+    data = get_quotes(symbol)
+
+    if Path(symbol_file).is_file():
+        print (symbol_file + " exist & append")
+        append_csv(symbol_file, data)
+    else:
+        print (symbol_file + " created")
+        write_csv(symbol_file, data)
+
     return symbol_file
