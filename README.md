@@ -45,10 +45,10 @@ pip install TA-Lib
 ---------------------------------------------------------------------
 
 ## todo-list
-0. read data according to date range
+-0. read data according to date range (compact)
 1. collect data
 2. pattern recognition for given period of time (technical analysis)
-3. candle stick plot better
+-3. candle stick plot better
 4. news feed (基本面 & 板块分析)
 5. ML
 

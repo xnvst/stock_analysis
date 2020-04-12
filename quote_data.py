@@ -33,18 +33,21 @@ def remove_duplicate(quotes, data):
             data = data.append(row)
         i = i + 1
 
-def collect_quote(symbol, outputsize = 'compact'):
+def collect_quote(symbol, outputsize = 'compact', append = 0):
     if outputsize == 'full':
         symbol_file = 'data/' + symbol + '_full.csv'
     else:
         symbol_file = 'data/' + symbol + '.csv'
 
-    data = get_quotes(symbol)
-
     if Path(symbol_file).is_file():
-        print (symbol_file + " exist & append")
-        append_csv(symbol_file, data)
+        if append == 1:
+            data = get_quotes(symbol)
+            print (symbol_file + " exist & append")
+            append_csv(symbol_file, data)
+        else:
+            print (symbol_file + " exist")
     else:
+        data = get_quotes(symbol)
         print (symbol_file + " created")
         write_csv(symbol_file, data)
 

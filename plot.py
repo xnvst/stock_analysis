@@ -14,8 +14,8 @@ from mpl_finance import candlestick_ohlc
 import numpy
 import talib
 
-def plot_candlestick(path):
-    quotes = pd.read_csv(path)
+def plot_candlestick(file):
+    quotes = pd.read_csv(file)
     quotes.index = pd.to_datetime(quotes['date'])
 
     if False:
@@ -32,11 +32,13 @@ def plot_candlestick(path):
         plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
 
     if True:
-        fig = plt.figure(figsize=(24, 8))
-        ax = fig.add_subplot(1, 2, 1)
-        candlestick_ohlc(ax, zip(mdates.date2num(quotes.index), quotes['1. open'], quotes['2. high'],quotes['3. low'], quotes['4. close']),width=0.6,colorup='r', colordown='g')
-        ax.xaxis_date()
-        ax.autoscale_view()
+        fig, axs = plt.subplots(4, 2)
+        fig.suptitle(file)
+        axs[0, 0].set_title('candlestick')
+        #ax = fig.add_subplot(2, 2, 1)
+        candlestick_ohlc(axs[0, 0], zip(mdates.date2num(quotes.index), quotes['1. open'], quotes['2. high'],quotes['3. low'], quotes['4. close']),width=0.6,colorup='r', colordown='g')
+        axs[0, 0].xaxis_date()
+        axs[0, 0].autoscale_view()
 
     _open = pd.to_datetime(quotes['1. open'])
     high = pd.to_datetime(quotes['2. high'])
@@ -48,16 +50,20 @@ def plot_candlestick(path):
     AD_output = talib.AD(high, low, close, volume)
     CDL2CROWS_output = talib.CDL2CROWS(_open, high, low, close)
 
-    #plt.subplot(1, 2, 2)
-    plt.figure('SMA_output')
-    plt.plot(SMA_output)
+    axs[1, 0].set_title('SMA_output')
+    axs[1, 0].plot(SMA_output, 'tab:green')
+    axs[1, 0].xaxis_date()
+    axs[1, 0].autoscale_view()
 
-    #plt.subplot(1, 2, 2)
-    plt.figure('AD_output')
-    plt.plot(AD_output)
+    axs[2, 0].set_title('AD_output')
+    axs[2, 0].plot(AD_output, 'tab:orange')
+    axs[2, 0].xaxis_date()
+    axs[2, 0].autoscale_view()
 
-    plt.figure('CDL2CROWS_output')
-    plt.plot(CDL2CROWS_output)
+    axs[3, 0].set_title('CDL2CROWS_output')
+    axs[3, 0].plot(CDL2CROWS_output)
+    axs[3, 0].xaxis_date()
+    axs[3, 0].autoscale_view()
 
     plt.show()
 

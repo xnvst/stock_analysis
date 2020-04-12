@@ -18,11 +18,8 @@ symbol_list = \
 if __name__ == "__main__":
     for s in symbol_list:
         file = collect_quote(s)
-
-    #data = get_quotes('AAPL')
-    #append_csv(aapl_path, data)
-
-    #plot_candlestick(file)
+        if s == 'NBEV':
+            plot_candlestick(file)
 
 
 
