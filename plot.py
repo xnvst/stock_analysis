@@ -14,6 +14,9 @@ from mpl_finance import candlestick_ohlc
 import numpy
 import talib
 
+from plotly.offline import plot
+import plotly.graph_objs as go
+
 def plot_candlestick(file):
     quotes = pd.read_csv(file)
     quotes.index = pd.to_datetime(quotes['date'])
@@ -66,4 +69,9 @@ def plot_candlestick(file):
     axs[3, 0].autoscale_view()
 
     plt.show()
+
+
+def plot_trace(trace):
+    data = [trace]
+    plot(data, filename='go_candle1.html')
 

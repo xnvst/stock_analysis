@@ -3,6 +3,15 @@ import operator
 import pandas as pd
 from pathlib import Path
 
+symbol_list = \
+['SPYG', \
+'AAOI', \
+'BA', \
+'NBEV', \
+'CRMD', \
+]
+
+
 def get_quotes(name, outputsize = 'compact'):
     key = 'B478G0MJQCKU8MKM'
     ts = TimeSeries(key, output_format='pandas')
@@ -26,11 +35,14 @@ def remove_duplicate(quotes, data):
     for index,row in data.iterrows():
         s1 = str(index)[0:10]
         s2 = str(quotes['date'][i])[0:10]
+        print(s1 + "  " + s2)
         if (operator.eq(s1, s2)):
             equal.append(1)
+            quotes.drop([i])
         else:
             equal.append(0)
-            data = data.append(row)
+            data = data.append(quotes[i])
+        data = data.append(quotes)
         i = i + 1
 
 def collect_quote(symbol, outputsize = 'compact', append = 0):
@@ -52,3 +64,7 @@ def collect_quote(symbol, outputsize = 'compact', append = 0):
         write_csv(symbol_file, data)
 
     return symbol_file
+
+def collect_all_quotes():
+    for s in symbol_list:
+        file = collect_quote(s, append = 1)
