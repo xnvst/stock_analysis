@@ -17,7 +17,7 @@ def get_quotes(name, outputsize = 'compact'):
     return quotes
 
 def write_csv(path, data):
-    data.to_csv(path, index=False)
+    data.to_csv(path)
 
 def append_csv(path, data):
     quotes = pd.read_csv(path)
@@ -34,7 +34,7 @@ def remove_duplicate_and_write(path, quotes, data):
     data.to_csv('tmp.csv')
     quotes2 = pd.read_csv('tmp.csv')
     quotes = (pd.concat([quotes2, quotes], axis=0, join='inner')).sort_values(by=['date'], ascending=False)
-    write_csv(path, quotes)
+    quotes.to_csv(path, index=False)
 
 def collect_quote(symbol, outputsize = 'compact', append = 0):
     if outputsize == 'full':
@@ -59,8 +59,8 @@ def collect_quote(symbol, outputsize = 'compact', append = 0):
 def collect_all_quotes(append_new):
     cnt = 0
     for s in symbols:
+#        if s < 'HD':
+#            continue
         file = collect_quote(s, append = append_new)
+        time.sleep(11)
         cnt = cnt + 1
-        if cnt % 5 == 0:
-            time.sleep(62)
-            cnt = 0
