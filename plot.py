@@ -17,9 +17,21 @@ import talib
 from plotly.offline import plot
 import plotly.graph_objs as go
 
+import backtrader as bt
+
 def plot_candlestick(file):
     quotes = pd.read_csv(file)
     quotes.index = pd.to_datetime(quotes['date'])
+
+    _open = pd.to_datetime(quotes['1. open'])
+    high = pd.to_datetime(quotes['2. high'])
+    low = pd.to_datetime(quotes['3. low'])
+    close = pd.to_datetime(quotes['4. close'])
+    volume = pd.to_datetime(quotes['5. volume'])
+
+    upper, middle, lower = talib.BBANDS(close, timeperiod=14)
+    upper.index = upper.index.shift(periods=1, freq=-5)
+    print(upper)
 
     if False:
         fig, ax = plt.subplots()
@@ -41,17 +53,17 @@ def plot_candlestick(file):
         #ax = fig.add_subplot(2, 2, 1)
         candlestick_ohlc(axs[0, 0], zip(mdates.date2num(quotes.index), quotes['1. open'], quotes['2. high'],quotes['3. low'], quotes['4. close']),width=0.6,colorup='r', colordown='g')
         axs[0, 0].xaxis_date()
+
+        axs[0, 0].plot(upper)
+        axs[0, 0].plot(middle)
+        axs[0, 0].plot(lower)
+
         axs[0, 0].autoscale_view()
 
-    _open = pd.to_datetime(quotes['1. open'])
-    high = pd.to_datetime(quotes['2. high'])
-    low = pd.to_datetime(quotes['3. low'])
-    close = pd.to_datetime(quotes['4. close'])
-    volume = pd.to_datetime(quotes['5. volume'])
 
     SMA_output = talib.SMA(close)
     AD_output = talib.AD(high, low, close, volume)
-    CDL2CROWS_output = talib.CDL2CROWS(_open, high, low, close)
+    BBANDS = talib.BBANDS(close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)
 
     axs[1, 0].set_title('SMA_output')
     axs[1, 0].plot(SMA_output, 'tab:green')
@@ -63,8 +75,10 @@ def plot_candlestick(file):
     axs[2, 0].xaxis_date()
     axs[2, 0].autoscale_view()
 
-    axs[3, 0].set_title('CDL2CROWS_output')
-    axs[3, 0].plot(CDL2CROWS_output)
+    axs[3, 0].set_title('BBANDS')
+    axs[3, 0].plot(upper)
+    axs[3, 0].plot(middle)
+    axs[3, 0].plot(lower)
     axs[3, 0].xaxis_date()
     axs[3, 0].autoscale_view()
 

@@ -53,7 +53,6 @@ def collect_quote(symbol, outputsize = 'compact', append = 0):
         data = get_quotes(symbol)
         print (symbol_file + " created")
         write_csv(symbol_file, data)
-
     return symbol_file
 
 def collect_all_quotes(append_new):

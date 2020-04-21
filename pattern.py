@@ -72,7 +72,7 @@ def pattern_recognition(file, date):
 
     print(date)
     for index, row in df.iterrows():
-        if df.loc[index, 'date'] == date:
+        if df.loc[index, 'date'] == date and df.loc[index, 'candlestick_pattern'] != 'NO_PATTERN':
             print(row)
             pass
 
