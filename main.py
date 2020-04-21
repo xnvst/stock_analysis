@@ -13,15 +13,11 @@ from plot import *
 from pattern import *
 
 if __name__ == "__main__":
-    file = collect_quote('CRMD', append = 1)
-    sys.exit(0)
+    collect_all_quotes(append_new = 1)
 
-#    collect_all_quotes()
-
-    file = collect_quote('CRMD', append = 0)
-    date = datetime.strftime(datetime.now() - timedelta(3), '%Y-%m-%d')
+#    date = datetime.strftime(datetime.now() - timedelta(3), '%Y-%m-%d')
 #    today = datetime.today().strftime('%Y-%m-%d')
-    pattern_recognition(file, date)
+#    pattern_recognition(file, date)
 
 #    for s in symbol_list:
 #        file = collect_quote(s)
