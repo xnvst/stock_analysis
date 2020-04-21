@@ -3,6 +3,7 @@ import operator
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import time
 
 from symbol_list import *
 
@@ -33,7 +34,6 @@ def remove_duplicate_and_write(path, quotes, data):
     data.to_csv('tmp.csv')
     quotes2 = pd.read_csv('tmp.csv')
     quotes = (pd.concat([quotes2, quotes], axis=0, join='inner')).sort_values(by=['date'], ascending=False)
-    print(quotes)
     write_csv(path, quotes)
 
 def collect_quote(symbol, outputsize = 'compact', append = 0):
@@ -57,5 +57,10 @@ def collect_quote(symbol, outputsize = 'compact', append = 0):
     return symbol_file
 
 def collect_all_quotes(append_new):
+    cnt = 0
     for s in symbols:
         file = collect_quote(s, append = append_new)
+        cnt = cnt + 1
+        if cnt % 5 == 0:
+            time.sleep(62)
+            cnt = 0

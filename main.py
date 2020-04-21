@@ -11,9 +11,10 @@ from datetime import datetime, timedelta
 from quote_data import *
 from plot import *
 from pattern import *
+from symbol_list import *
 
 if __name__ == "__main__":
-    collect_all_quotes(append_new = 1)
+    collect_all_quotes(append_new = 0)
 
 #    date = datetime.strftime(datetime.now() - timedelta(3), '%Y-%m-%d')
 #    today = datetime.today().strftime('%Y-%m-%d')
