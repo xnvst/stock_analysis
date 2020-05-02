@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import time
-
 from symbol_list import *
 
 def get_quotes(name, outputsize = 'compact'):
@@ -36,7 +35,7 @@ def remove_duplicate_and_write(path, quotes, data):
     quotes = (pd.concat([quotes2, quotes], axis=0, join='inner')).sort_values(by=['date'], ascending=False)
     quotes.to_csv(path, index=False)
 
-def collect_quote(symbol, outputsize = 'compact', append = 0):
+def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0):
     if outputsize == 'full':
         symbol_file = 'data/' + symbol + '_full.csv'
     else:
@@ -45,21 +44,25 @@ def collect_quote(symbol, outputsize = 'compact', append = 0):
     if Path(symbol_file).is_file():
         if append == 1:
             data = get_quotes(symbol)
-            print (symbol_file + " exist & append")
+            if print_debug == 1:
+                print (symbol_file + " exist & append")
             append_csv(symbol_file, data)
         else:
-            print (symbol_file + " exist")
+            if print_debug == 1:
+                print (symbol_file + " exist")
+            pass
     else:
         data = get_quotes(symbol)
         print (symbol_file + " created")
         write_csv(symbol_file, data)
     return symbol_file
 
-def collect_all_quotes(append_new):
+def collect_all_quotes(append_new, print_debug = 1):
     cnt = 0
     for s in symbols:
+        print (s)
 #        if s < 'HD':
 #            continue
-        file = collect_quote(s, append = append_new)
+        file = collect_quote(s, append = append_new, print_debug = print_debug)
         time.sleep(11)
         cnt = cnt + 1

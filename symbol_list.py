@@ -1,6 +1,6 @@
 symbols =[
-'.DJI',
-'.SPX',
+#'.DJI',
+#'.SPX',
 'AAOI',
 'AAPL',
 'ACB',

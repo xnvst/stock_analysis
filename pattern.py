@@ -2,17 +2,24 @@ import pandas as pd
 import numpy as np
 import talib
 from itertools import compress
+from datetime import datetime, timedelta
 
+from quote_data import *
 from candle_rankings import *
 from plot import *
 
-def pattern_list():
+# set how many past days to check
+total_past_days = 2
+
+def candle_pattern_list():
     candle_names = talib.get_function_groups()['Pattern Recognition']
     for e in candle_names:
         print('"' + e + '",')
     print(candle_rankings)
 
-def pattern_recognition(file, date):
+def candle_pattern_recognition(s):
+    file = collect_quote(s, append = 0)
+
     quotes = pd.read_csv(file)
 
     # extract Final historical df
@@ -70,11 +77,17 @@ def pattern_recognition(file, date):
     # clean up candle columns
     df.drop(candle_names, axis = 1, inplace = True)
 
-    print(date)
-    for index, row in df.iterrows():
-        if df.loc[index, 'date'] == date and df.loc[index, 'candlestick_pattern'] != 'NO_PATTERN':
-            print(row)
-            pass
+    past_days = 0
+    while past_days < total_past_days + 1:
+        date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
+        past_days = past_days + 1
+        for index, row in df.iterrows():
+            if df.loc[index, 'date'] == date and df.loc[index, 'candlestick_pattern'] != 'NO_PATTERN':
+                print(s)
+                print(date)
+                print(row)
+                print('----------------------------------------\n')
+                pass
 
     trace = go.Candlestick(
                 open=op,

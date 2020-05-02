@@ -30,8 +30,8 @@ def plot_candlestick(file):
     volume = pd.to_datetime(quotes['5. volume'])
 
     upper, middle, lower = talib.BBANDS(close, timeperiod=14)
-    upper.index = upper.index.shift(periods=1, freq=-5)
-    print(upper)
+    #upper.index = upper.index.shift(periods=1, freq=-5)
+    #print(upper)
 
     if False:
         fig, ax = plt.subplots()
