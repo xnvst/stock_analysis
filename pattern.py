@@ -18,6 +18,9 @@ def candle_pattern_list():
     print(candle_rankings)
 
 def candle_pattern_recognition(s):
+#    if s != 'V' and s != 'CRMD':
+#        return
+
     file = collect_quote(s, append = 0)
 
     quotes = pd.read_csv(file)
@@ -86,14 +89,17 @@ def candle_pattern_recognition(s):
                 print(s)
                 print(date)
                 print(row)
+                print('candlestick_pattern ranking: ' + str(candle_rankings[df.loc[index, 'candlestick_pattern']]))
                 print('----------------------------------------\n')
                 pass
+    print(s + ' ^_^\n')
 
     trace = go.Candlestick(
+                x = df['date'],
                 open=op,
                 high=hi,
                 low=lo,
                 close=cl)
-#    plot_trace(trace)
+    plot_trace(trace, s+'.html')
 
     return df

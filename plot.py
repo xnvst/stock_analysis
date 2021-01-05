@@ -85,7 +85,7 @@ def plot_candlestick(file):
     plt.show()
 
 
-def plot_trace(trace):
+def plot_trace(trace, name):
     data = [trace]
-    plot(data, filename='go_candle1.html')
+    plot(data, filename=name)
 

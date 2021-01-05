@@ -59,10 +59,14 @@ def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0):
 
 def collect_all_quotes(append_new, print_debug = 1):
     cnt = 0
-    for s in symbols:
+    for s in my_symbols:
         print (s)
-#        if s < 'HD':
+#        if s < 'TD':
 #            continue
         file = collect_quote(s, append = append_new, print_debug = print_debug)
-        time.sleep(11)
+        time.sleep(12)
         cnt = cnt + 1
+        print ('cnt = ' + cnt)
+        if cnt % 5 == 0:
+            time.sleep(12)
+

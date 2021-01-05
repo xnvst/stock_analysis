@@ -59,6 +59,8 @@ pip install TA-Lib
 
 5. ML
 
+6. 懒人炒股心经
+
 
 ## reference
 

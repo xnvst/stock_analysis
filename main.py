@@ -17,11 +17,15 @@ if __name__ == "__main__":
 #    collect_all_quotes(append_new = 1)
 #    sys.exit(0)
 
-#    file = collect_quote('BA', append = 1)
+#    quotes = pd.read_csv("./nasdaq.csv")
+#    for s in quotes["Symbol"]:
+#        print("'" + s + "',")
+
+#    file = collect_quote('NBEV', append = 1)
 #    plot_candlestick(file)
 #    sys.exit(0)
 
-    for s in symbols:
+    for s in my_symbols:
         candle_pattern_recognition(s)
 
 
