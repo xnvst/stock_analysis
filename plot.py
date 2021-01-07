@@ -12,7 +12,6 @@ import mpl_finance as mpf
 from mpl_finance import candlestick_ohlc
 
 import numpy
-import talib
 
 from plotly.offline import plot
 import plotly.graph_objs as go
@@ -85,7 +84,7 @@ def plot_candlestick(file):
     plt.show()
 
 
-def plot_trace(trace, name):
+def plot_trace(trace, name='tmp.html'):
     data = [trace]
     plot(data, filename=name)
 

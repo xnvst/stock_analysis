@@ -9,7 +9,7 @@ from candle_rankings import *
 from plot import *
 
 # set how many past days to check
-total_past_days = 2
+total_past_days = 1
 
 def candle_pattern_list():
     candle_names = talib.get_function_groups()['Pattern Recognition']
@@ -17,10 +17,7 @@ def candle_pattern_list():
         print('"' + e + '",')
     print(candle_rankings)
 
-def candle_pattern_recognition(s):
-#    if s != 'V' and s != 'CRMD':
-#        return
-
+def candle_pattern_recognition(s, enable_plot = 0):
     file = collect_quote(s, append = 0)
 
     quotes = pd.read_csv(file)
@@ -92,14 +89,15 @@ def candle_pattern_recognition(s):
                 print('candlestick_pattern ranking: ' + str(candle_rankings[df.loc[index, 'candlestick_pattern']]))
                 print('----------------------------------------\n')
                 pass
-    print(s + ' ^_^\n')
+#    print(s + ' ^_^\n')
 
-    trace = go.Candlestick(
-                x = df['date'],
-                open=op,
-                high=hi,
-                low=lo,
-                close=cl)
-    plot_trace(trace, s+'.html')
+    if enable_plot > 0:
+        trace = go.Candlestick(
+                    x = df['date'],
+                    open=op,
+                    high=hi,
+                    low=lo,
+                    close=cl)
+        plot_trace(trace, s+'.html')
 
     return df

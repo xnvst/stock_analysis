@@ -43,7 +43,7 @@ def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0):
 
     if Path(symbol_file).is_file():
         if append == 1:
-            data = get_quotes(symbol)
+            data = get_quotes(symbol, outputsize)
             if print_debug == 1:
                 print (symbol_file + " exist & append")
             append_csv(symbol_file, data)
@@ -52,7 +52,7 @@ def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0):
                 print (symbol_file + " exist")
             pass
     else:
-        data = get_quotes(symbol)
+        data = get_quotes(symbol, outputsize)
         print (symbol_file + " created")
         write_csv(symbol_file, data)
     return symbol_file
@@ -66,7 +66,6 @@ def collect_all_quotes(append_new, print_debug = 1):
         file = collect_quote(s, append = append_new, print_debug = print_debug)
         time.sleep(12)
         cnt = cnt + 1
-        print ('cnt = ' + cnt)
         if cnt % 5 == 0:
             time.sleep(12)
 

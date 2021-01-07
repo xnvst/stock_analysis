@@ -50,10 +50,12 @@ pip install TA-Lib
 
 2. pattern recognition for given period of time (technical analysis)
 2.1 ---------------candle stick done
-2.2 talib
+2.2
+talib
+https://github.com/RomelTorres/alpha_vantage
 2.3 given time
 
-3. candle stick plot better
+3. candle stick plot better ---------------done
 
 4. news feed (基本面 & 板块分析)
 
