@@ -28,11 +28,11 @@ if __name__ == "__main__":
             print(s)
             candle_pattern_recognition(s)
             macd_analysis(s)
+            print('###----------------------------------------\n\n')
             time.sleep(12)
             cnt = cnt + 1
             if cnt % 5 == 0:
                 time.sleep(12)
-            print('###----------------------------------------\n\n')
 
     #macd_analysis('MA')
 
