@@ -8,9 +8,6 @@ from quote_data import *
 from candle_rankings import *
 from plot import *
 
-# set how many past days to check
-total_past_days = 4
-
 def candle_pattern_list():
     candle_names = talib.get_function_groups()['Pattern Recognition']
     for e in candle_names:
@@ -83,7 +80,10 @@ def candle_pattern_recognition(s, enable_plot = 0):
         past_days = past_days + 1
         for index, row in df.iterrows():
             if df.loc[index, 'date'] == date and df.loc[index, 'candlestick_pattern'] != 'NO_PATTERN':
-                print(date)
+                if past_days == 0:
+                    print('********' + date + '********')
+                else:
+                    print(date)
                 print(row)
                 print('candlestick_pattern ranking: ' + str(candle_rankings[df.loc[index, 'candlestick_pattern']]))
                 print('----------------------------------------\n')

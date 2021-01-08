@@ -1,3 +1,6 @@
+# set how many past days to check
+total_past_days = 2
+
 def read_symbols():
     quotes = pd.read_csv("./nasdaq.csv")
     for s in quotes["Symbol"]:
@@ -49,6 +52,7 @@ my_symbols =[
 'DOCU',
 'DIS',
 'DLR',
+'DLR.TO',
 'EL',
 'ESS',
 'FB',

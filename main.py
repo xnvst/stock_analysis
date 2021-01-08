@@ -28,19 +28,18 @@ if __name__ == "__main__":
             print(s)
             candle_pattern_recognition(s)
             macd_analysis(s)
+            price_volume_analysis(s)
             print('###----------------------------------------\n\n')
             time.sleep(12)
             cnt = cnt + 1
             if cnt % 5 == 0:
-                time.sleep(12)
-
-    #macd_analysis('MA')
+                time.sleep(5)
 
 #    quotes = pd.read_csv("./nasdaq.csv")
 #    for s in quotes["Symbol"]:
 #        print("'" + s + "',")
 
-#    file = collect_quote('MA', outputsize = 'full', append = 1)
+#    file = collect_quote('DLR.TO', outputsize = 'full', append = 1)
 #    plot_candlestick(file)
 #    sys.exit(0)
 

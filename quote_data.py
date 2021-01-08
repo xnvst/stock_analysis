@@ -67,5 +67,5 @@ def collect_all_quotes(append_new, print_debug = 1):
         time.sleep(12)
         cnt = cnt + 1
         if cnt % 5 == 0:
-            time.sleep(12)
+            time.sleep(5)
 
