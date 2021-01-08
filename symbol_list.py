@@ -139,6 +139,7 @@ my_symbols =[
 'XLE',
 'XLNX',
 'XLV',
+'XPEV',
 'XNET',
 'ZBRA',
 ]
