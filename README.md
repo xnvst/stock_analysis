@@ -48,23 +48,23 @@ pip install TA-Lib
 0. read data according to date range (compact) ---------------done
 1. collect data ---------------done
 
-2. pattern recognition for given period of time (technical analysis)
-2.1 ---------------candle stick done
-2.2
-talib
-https://github.com/RomelTorres/alpha_vantage
-2.3 given time
+2. analysis
+2.1 candle stick pattern ---------------done
+2.2 technical analysis: MACD & PV(price-volume) ---------------done
+2.3 intra-day (TBD)
 
 3. candle stick plot better ---------------done
 
-4. news feed (基本面 & 板块分析)
+4. news feed (基本面 & 板块分析 & 机构持仓)
+4.1 目前人工进行 (yahoo, fintel, finviz, youtube, futu, tiprank)
+4.2 ML (investigation)
 
-5. ML
-
-6. 懒人炒股心经
+6. 懒人炒股心经 (TBD)
 
 
 ## reference
+
+https://github.com/RomelTorres/alpha_vantage
 
 https://github.com/HuaRongSAO/talib-document
 
