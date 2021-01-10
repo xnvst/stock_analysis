@@ -82,10 +82,10 @@ def macd_analysis(symbol, outputsize = 'compact'):
             if flag1 or flag2 or flag3:
                 if past_days == 0:
                     print('********' + str(index) + '************************')
-                else:
-                    print(index)
                     print(row)
                     print(df.loc[past_days])
+                else:
+                    print(index)
                 print('----------------------------------------\n')
                 pass
 
@@ -102,7 +102,6 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 
     close = df['4. close']
     volume = df['5. volume']
-    print(close)
 
 #    key = 'B478G0MJQCKU8MKM'
 #    at = TechIndicators(key, output_format='pandas')
@@ -111,39 +110,76 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 #    print(ema_data.shape)
 #    print(ema_data.loc[ema_data.index[1]])
 
+    short_period = 5
+    long_period = 20
+
+    volume_alpha = 0.2
+    price_alpha = 0.02
+
+    short_close_mean = np.mean(close[:short_period])
+    short_vol_mean = np.mean(volume[:short_period])
+
+    long_close_mean = np.mean(close[:long_period])
+    long_vol_mean = np.mean(volume[:long_period])
+
     past_days = 0
-    alpha = 0.3
-    beta = 0.01
     while past_days < total_past_days + 1:
         date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
-
         flag = 0
-        close_mean = np.mean(close[:10])
-        vol_mean = np.mean(volume[:10])
-        if close[past_days] > close_mean * (1+beta):
-            if volume[past_days] < vol_mean * (1+alpha) and volume[past_days] > vol_mean * (1-alpha):
-                print('高位无量就要拿，拿错也要拿')
+
+        price_up = close[past_days] > short_close_mean * (1+price_alpha) and close[past_days] > long_close_mean * (1+price_alpha)
+        price_similar = short_close_mean < long_close_mean * (1+volume_alpha) and short_close_mean > long_close_mean * (1-volume_alpha)
+        price_down = close[past_days] < short_close_mean * (1-price_alpha) and close[past_days] < long_close_mean * (1-price_alpha)
+
+        high_position = short_close_mean > long_close_mean    #高位
+        low_position = short_close_mean < long_close_mean    #低位
+
+        vol_up = volume[past_days] > short_vol_mean * (1+volume_alpha) and volume[past_days] > long_vol_mean * (1+volume_alpha)
+        vol_similar = short_vol_mean < long_vol_mean * (1+volume_alpha) and short_vol_mean > long_vol_mean * (1-volume_alpha)
+        vol_down = volume[past_days] < short_vol_mean * (1-volume_alpha) and volume[past_days] < long_vol_mean * (1-volume_alpha)
+
+        if vol_up:
+            if price_up:
+                print('量增价升，一定进场')
                 flag = 1
-            elif volume[past_days] > vol_mean * (1+alpha):
+            elif price_similar:
+                print('量增价平，高位走人')
+                flag = 1
+            elif price_down:
+                print('量增价跌，走为上策')
+                flag = 1
+        elif vol_down:
+            if price_up:
+                print('量减价升，提高警惕')
+                flag = 1
+            elif price_similar:
+                print('量减价平，提高警戒')
+                flag = 1
+            elif price_down:
+                print('量减价跌，天天要跌')
+                flag = 1
+
+        if high_position:
+            if vol_up:
                 print('高位放量就要跑，跑错也要跑')
                 flag = 1
-        elif close[past_days] < close_mean * (1-beta):
-            if volume[past_days] < vol_mean * (1+alpha) and volume[past_days] > vol_mean * (1-alpha):
-                print('低位无量就要等,等错也要等')
+            else:
+                print('高位无量就要拿，拿错也要拿')
                 flag = 1
-            elif volume[past_days] > vol_mean * (1+alpha):
+        elif low_position:
+            if vol_up:
                 print('低位放量就要跟,跟错也要跟')
+                flag = 1
+            else:
+                print('低位无量就要等,等错也要等')
                 flag = 1
 
         if flag:
             if past_days == 0:
-                print('********' + date + '************************')
+                print('********' + df.loc[df.index[past_days]]['date'] + '************************')
+                print(df.loc[df.index[past_days]])
             else:
-                print(date)
-                print(close[past_days])
-                print(volume[past_days])
-                print(close_mean)
-                print(vol_mean)
+                print(df.loc[df.index[past_days]]['date'])
             print('----------------------------------------\n')
 
         past_days = past_days + 1
@@ -178,4 +214,13 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 来源：雪球
 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 风险提示：本文所提到的观点仅代表个人的意见，所涉及标的不作推荐，据此买卖，风险自负。
+'''
+
+'''
+《懒人炒股心经》
+
+早盘大跌可加仓
+早盘大涨要减仓
+下午大涨只减仓
+下午大跌次日买
 '''

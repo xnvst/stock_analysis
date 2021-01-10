@@ -16,14 +16,18 @@ from technical import *
 if __name__ == "__main__":
     print('welcome!\n')
 
-    #step 1 - every night
-    if 0:
-        collect_all_quotes(append_new = 1)
+    cnt = 0
+    for s in my_symbols:
+        # step 1 - collect quote
+        if 1:
+            file = collect_quote(s, append = 1, print_debug = 0)
+            time.sleep(12)
+            cnt = cnt + 1
+            if cnt % 5 == 0:
+                time.sleep(5)
 
-    # step 2 - analysis every day
-    if 1:
-        cnt = 0
-        for s in my_symbols:
+        # step 2 - analysis
+        if 1:
             print('\n\n$$$----------------------------------------')
             print(s)
             candle_pattern_recognition(s)

@@ -61,8 +61,6 @@ def collect_all_quotes(append_new, print_debug = 1):
     cnt = 0
     for s in my_symbols:
         print (s)
-#        if s < 'TD':
-#            continue
         file = collect_quote(s, append = append_new, print_debug = print_debug)
         time.sleep(12)
         cnt = cnt + 1

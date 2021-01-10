@@ -27,6 +27,7 @@ def candle_pattern_recognition(s, enable_plot = 0):
     hi = df['2. high']
     lo = df['3. low']
     cl = df['4. close']
+    volume = df['5. volume']
 
     # candle_names = talib.get_function_groups()['Pattern Recognition']
     # create columns for each pattern
