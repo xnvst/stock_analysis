@@ -279,6 +279,13 @@ def mfi_analysis(symbol, outputsize = 'compact'):
             print('MFI 超卖')
             flag = 1
 
+        if mfi[rev_past_days-1] > 80 and mfi[rev_past_days] < 80:
+            print('MFI short trade')
+            flag = 1
+        elif mfi[rev_past_days-1] < 20 and mfi[rev_past_days] > 20:
+            print('MFI long trade')
+            flag = 1
+
         if high_position and mfi[rev_past_days] < 80:
             if close[past_days] > close[past_days+1]:
                 print('MFI reverse to downside')
