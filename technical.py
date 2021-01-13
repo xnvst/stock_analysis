@@ -7,16 +7,21 @@ from alpha_vantage.techindicators import TechIndicators
 from quote_data import *
 from plot import *
 
+def technical_analysis(symbol, outputsize = 'compact'):
+    macd_analysis(symbol, outputsize)
+    price_volume_analysis(symbol, outputsize)
+    mfi_analysis(symbol, outputsize)
+    return
+
 def macd_analysis(symbol, outputsize = 'compact'):
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
     # extract Final historical df
     df = pd.DataFrame(quotes)
 
-    key = 'B478G0MJQCKU8MKM'
     at = TechIndicators(key, output_format='pandas')
     macd_data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
-    #print(macd_data[:1])
+    #print(macd_data)
 
     dif = macd_data['MACD']
     dea = macd_data['MACD_Signal']
@@ -24,7 +29,7 @@ def macd_analysis(symbol, outputsize = 'compact'):
 
     past_days = 0
     for index, row in macd_data.iterrows():
-        date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
+        #date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
         if past_days < total_past_days + 1:
 
             flag1 = 0
@@ -70,14 +75,25 @@ def macd_analysis(symbol, outputsize = 'compact'):
 
             flag3 = 0
             close = df['4. close']
-            if close[past_days] > close[past_days+1]:
-                if macd_hist[past_days] < macd_hist[past_days+1]:
-                    print('macd bear caution!!! 顶背离 sell')
-                    flag3 = 1
-            elif close[past_days] < close[past_days+1]:
-                if macd_hist[past_days] > macd_hist[past_days+1]:
-                    print('macd bull caution!!! 底背离 buy')
-                    flag3 = 1
+            bottom_diverge = 1
+            top_diverge = 1
+            for i in range(3):
+                if close[past_days+i] < close[past_days+i+1] and macd_hist[past_days+i] > macd_hist[past_days+i+1]:
+                    continue
+                else:
+                    bottom_diverge = 0
+                    pass
+                if close[past_days+i] > close[past_days+i+1] and macd_hist[past_days+i] < macd_hist[past_days+i+1]:
+                    continue
+                else:
+                    top_diverge = 0
+                    pass
+            if bottom_diverge:
+                print('macd bull caution!!! 底背离 buy')
+                flag3 = 1
+            if  top_diverge:
+                print('macd bear caution!!! 顶背离 sell')
+                flag3 = 1
 
             if flag1 or flag2 or flag3:
                 if past_days == 0:
@@ -124,7 +140,7 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 
     past_days = 0
     while past_days < total_past_days + 1:
-        date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
+        #date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
         flag = 0
 
         price_up = close[past_days] > short_close_mean * (1+price_alpha) and close[past_days] > long_close_mean * (1+price_alpha)
@@ -179,7 +195,7 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
                 print('********' + df.loc[df.index[past_days]]['date'] + '************************')
                 print(df.loc[df.index[past_days]])
             else:
-                print(df.loc[df.index[past_days]]['date'])
+                print(df.loc[df.index[past_days]])
             print('----------------------------------------\n')
 
         past_days = past_days + 1
@@ -224,3 +240,63 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 下午大涨只减仓
 下午大跌次日买
 '''
+
+def mfi_analysis(symbol, outputsize = 'compact'):
+    file = collect_quote(symbol, append = 0)
+    quotes = pd.read_csv(file)
+    # extract Final historical df
+    df = pd.DataFrame(quotes)
+    close = df['4. close']
+
+    at = TechIndicators(key, output_format='pandas')
+    data, meta_data = at.get_mfi(symbol, interval='daily', time_period=14, series_type='close')
+    mfi = data['MFI']
+    #print(data)
+    #print(mfi[-1])
+
+    short_period = 5
+    long_period = 20
+
+    price_alpha = 0.02
+
+    short_mfi_mean = np.mean(mfi[-1-short_period:-1])
+    long_mfi_mean = np.mean(mfi[-1-short_period:-1])
+    #print(short_mfi_mean)
+
+    high_position = short_mfi_mean > 80    #高位
+    low_position = short_mfi_mean < 20    #低位
+
+    # mfi is in reverse order of date
+    past_days = 0
+    rev_past_days = -1
+    while past_days < total_past_days + 1:
+        flag = 0
+
+        if mfi[rev_past_days] > 80:
+            print('MFI 超买')
+            flag = 1
+        elif mfi[rev_past_days] < 20:
+            print('MFI 超卖')
+            flag = 1
+
+        if high_position and mfi[rev_past_days] < 80:
+            if close[past_days] > close[past_days+1]:
+                print('MFI reverse to downside')
+                flag = 1
+        elif low_position and mfi[rev_past_days] > 20:
+            if close[past_days] < close[past_days+1]:
+                print('MFI reverse to upside')
+                flag = 1
+
+        if flag:
+            if rev_past_days == 0:
+                print('********' + data.loc[data.index[rev_past_days]] + '************************')
+            else:
+                print(data.loc[data.index[rev_past_days]])
+            print('----------------------------------------\n')
+
+        past_days = past_days + 1
+        rev_past_days = rev_past_days - 1
+
+
+    return

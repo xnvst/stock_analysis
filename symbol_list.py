@@ -1,5 +1,7 @@
+key = 'B478G0MJQCKU8MKM'
+
 # set how many past days to check
-total_past_days = 2
+total_past_days = 1
 
 def read_symbols():
     quotes = pd.read_csv("./nasdaq.csv")
@@ -11,7 +13,7 @@ my_symbols =[
 #'.SPX',
 'AAOI',
 'AAPL',
-'AC',
+'AC.TO',
 'ACB',
 'ACST',
 'AGTC',
@@ -103,6 +105,7 @@ my_symbols =[
 'ROBO',
 'SBUX',
 'SDC',
+'SE',
 'SLF',
 'SNY',
 'SPCE',

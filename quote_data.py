@@ -7,7 +7,6 @@ import time
 from symbol_list import *
 
 def get_quotes(name, outputsize = 'compact'):
-    key = 'B478G0MJQCKU8MKM'
     ts = TimeSeries(key, output_format='pandas')
     if outputsize == 'full':
         quotes, meta = ts.get_daily(symbol=name, outputsize='full')

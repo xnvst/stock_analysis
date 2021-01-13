@@ -16,8 +16,16 @@ from technical import *
 if __name__ == "__main__":
     print('welcome!\n')
 
+    if 0:
+        s = 'AAPL'
+        technical_analysis(s)
+        sys.exit(0)
+
     cnt = 0
     for s in my_symbols:
+#        if s != 'COST':
+#            continue
+
         # step 1 - collect quote
         if 1:
             file = collect_quote(s, append = 1, print_debug = 0)
@@ -31,8 +39,7 @@ if __name__ == "__main__":
             print('\n\n$$$----------------------------------------')
             print(s)
             candle_pattern_recognition(s)
-            macd_analysis(s)
-            price_volume_analysis(s)
+            technical_analysis(s)
             print('###----------------------------------------\n\n')
             time.sleep(12)
             cnt = cnt + 1
@@ -43,7 +50,7 @@ if __name__ == "__main__":
 #    for s in quotes["Symbol"]:
 #        print("'" + s + "',")
 
-#    file = collect_quote('DLR.TO', outputsize = 'full', append = 1)
+#    file = collect_quote('AC.TO', outputsize = 'full', append = 1)
 #    plot_candlestick(file)
 #    sys.exit(0)
 

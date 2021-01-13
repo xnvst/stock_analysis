@@ -55,7 +55,7 @@ pip install TA-Lib
 
 3. candle stick plot better ---------------done
 
-4. news feed (基本面 & 板块分析 & 机构持仓)
+4. news feed (基本面 & 板块分析 & 机构持仓 & 资金流入)
 4.1 目前人工进行 (yahoo, fintel, finviz, youtube, futu, tiprank)
 4.2 ML (investigation)
 
