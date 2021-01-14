@@ -7,13 +7,21 @@ from alpha_vantage.techindicators import TechIndicators
 from quote_data import *
 from plot import *
 
-def technical_analysis(symbol, outputsize = 'compact'):
-    macd_analysis(symbol, outputsize)
-    price_volume_analysis(symbol, outputsize)
-    mfi_analysis(symbol, outputsize)
-    return
+key_cnt = 0
 
-def macd_analysis(symbol, outputsize = 'compact'):
+def api_delay(cnt):
+    time.sleep(12)
+    cnt = cnt + 1
+    if cnt % 5 == 0:
+        time.sleep(5)
+
+def technical_analysis(symbol, outputsize = 'compact'):
+    t1 = macd_analysis(symbol, outputsize, 0)
+    t2 = price_volume_analysis(symbol, outputsize, 0)
+    t3 = mfi_analysis(symbol, outputsize, 0)
+    return t1, t2, t3
+
+def macd_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
     # extract Final historical df
@@ -22,6 +30,7 @@ def macd_analysis(symbol, outputsize = 'compact'):
     at = TechIndicators(key, output_format='pandas')
     macd_data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
     #print(macd_data)
+    api_delay(key_cnt)
 
     dif = macd_data['MACD']
     dea = macd_data['MACD_Signal']
@@ -36,41 +45,52 @@ def macd_analysis(symbol, outputsize = 'compact'):
             if dif[past_days] > 0 and dea[past_days] > 0:
                 if macd_hist[past_days] > 0 and macd_hist[past_days+1] < 0:
                     print('macd bull 1.1: 金叉')
+                    tenhnical_cnt += 2
                     flag1 = 1
                 elif dif[past_days] > dif[past_days+1] and dea[past_days] > dea[past_days+1]:
                     print('macd bull 1.2: 多头行情中,可以买入或持股')
+                    tenhnical_cnt += 0.5
                     flag1 = 1
                 elif dif[past_days] < dif[past_days+1] and dea[past_days] < dea[past_days+1]:
                     print('macd bear 1.3: 退潮阶段,股票将下跌,可以卖出股票和观望')
+                    tenhnical_cnt -= 1
                     flag1 = 1
             elif dif[past_days] < 0 and dea[past_days] < 0:
                 if macd_hist[past_days] < 0 and macd_hist[past_days+1] > 0:
                     print('macd bear 1.1: 死叉')
+                    tenhnical_cnt -= 2
                     flag1 = 1
                 elif macd_hist[past_days] > 0 and macd_hist[past_days+1] < 0:
                     print('macd bull 1.3: 金叉2')
+                    tenhnical_cnt += 1.5
                     flag1 = 1
                 elif dif[past_days] < dif[past_days+1] and dea[past_days] < dea[past_days+1]:
                     print('macd bear 1.2: 空头行情中,可以卖出股票或观望')
+                    tenhnical_cnt -= 0.5
                     flag1 = 1
                 elif dif[past_days] > dif[past_days+1] and dea[past_days] > dea[past_days+1]:
                     print('macd bull 1.4: 行情即将启动,股票将上涨,可以买进股票或持股待涨')
+                    tenhnical_cnt += 1
                     flag1 = 1
 
             flag2 = 0
             if macd_hist[past_days] > 0 and macd_hist[past_days+1] > 0:
                 if macd_hist[past_days] < macd_hist[past_days+1]:
                     print('macd bear 2.1: 红柱状缩小,进入调整期')
+                    tenhnical_cnt -= 0.5
                     flag2 = 1
                 elif macd_hist[past_days] > macd_hist[past_days+1]:
                     print('macd bull 2.1: 当红柱状持续放大时,表明股市处于牛市行情中,股价将继续上涨')
+                    tenhnical_cnt += 1
                     flag2 = 1
             elif macd_hist[past_days] < 0 and macd_hist[past_days+1] < 0:
                 if macd_hist[past_days] < macd_hist[past_days+1]:
                     print('macd bear 2.2: 当绿柱状持续放大时,表明股市处于熊市行情之中,股价将继续下跌')
+                    tenhnical_cnt -= 1
                     flag2 = 1
                 elif macd_hist[past_days] > macd_hist[past_days+1]:
                     print('macd bull 2.2: 当绿柱状开始收缩时,表明股市的大跌行情即将结束,股价将止跌向上或进入盘整')
+                    tenhnical_cnt -= 0.5
                     flag2 = 1
 
             flag3 = 0
@@ -90,9 +110,11 @@ def macd_analysis(symbol, outputsize = 'compact'):
                     pass
             if bottom_diverge:
                 print('macd bull caution!!! 底背离 buy')
+                tenhnical_cnt += 2
                 flag3 = 1
             if  top_diverge:
                 print('macd bear caution!!! 顶背离 sell')
+                tenhnical_cnt -= 2
                 flag3 = 1
 
             if flag1 or flag2 or flag3:
@@ -107,10 +129,10 @@ def macd_analysis(symbol, outputsize = 'compact'):
 
         past_days = past_days + 1
 
-    return
+    return tenhnical_cnt
 
 
-def price_volume_analysis(symbol, outputsize = 'compact'):
+def price_volume_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
     # extract Final historical df
@@ -125,6 +147,7 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 #    print(ema_data)
 #    print(ema_data.shape)
 #    print(ema_data.loc[ema_data.index[1]])
+#    api_delay(key_cnt)
 
     short_period = 5
     long_period = 20
@@ -157,27 +180,34 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
         if vol_up:
             if price_up:
                 print('量增价升，一定进场')
+                tenhnical_cnt += 2
                 flag = 1
             elif price_similar:
                 print('量增价平，高位走人')
+                tenhnical_cnt -= 0.5
                 flag = 1
             elif price_down:
                 print('量增价跌，走为上策')
+                tenhnical_cnt -= 2
                 flag = 1
         elif vol_down:
             if price_up:
                 print('量减价升，提高警惕')
+                tenhnical_cnt -= 0.5
                 flag = 1
             elif price_similar:
                 print('量减价平，提高警戒')
+                tenhnical_cnt -= 0.5
                 flag = 1
             elif price_down:
                 print('量减价跌，天天要跌')
+                tenhnical_cnt -= 2
                 flag = 1
 
         if high_position:
             if vol_up:
                 print('高位放量就要跑，跑错也要跑')
+                tenhnical_cnt -= 1
                 flag = 1
             else:
                 print('高位无量就要拿，拿错也要拿')
@@ -185,6 +215,7 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
         elif low_position:
             if vol_up:
                 print('低位放量就要跟,跟错也要跟')
+                tenhnical_cnt += 1
                 flag = 1
             else:
                 print('低位无量就要等,等错也要等')
@@ -200,7 +231,7 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 
         past_days = past_days + 1
 
-    return
+    return tenhnical_cnt
 
 
 '''
@@ -241,7 +272,7 @@ def price_volume_analysis(symbol, outputsize = 'compact'):
 下午大跌次日买
 '''
 
-def mfi_analysis(symbol, outputsize = 'compact'):
+def mfi_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
     # extract Final historical df
@@ -253,6 +284,7 @@ def mfi_analysis(symbol, outputsize = 'compact'):
     mfi = data['MFI']
     #print(data)
     #print(mfi[-1])
+    api_delay(key_cnt)
 
     short_period = 5
     long_period = 20
@@ -274,25 +306,31 @@ def mfi_analysis(symbol, outputsize = 'compact'):
 
         if mfi[rev_past_days] > 80:
             print('MFI 超买')
+            tenhnical_cnt -= 0.5
             flag = 1
         elif mfi[rev_past_days] < 20:
             print('MFI 超卖')
+            tenhnical_cnt += 0.5
             flag = 1
 
         if mfi[rev_past_days-1] > 80 and mfi[rev_past_days] < 80:
             print('MFI short trade')
+            tenhnical_cnt -= 1
             flag = 1
         elif mfi[rev_past_days-1] < 20 and mfi[rev_past_days] > 20:
             print('MFI long trade')
+            tenhnical_cnt += 1
             flag = 1
 
         if high_position and mfi[rev_past_days] < 80:
             if close[past_days] > close[past_days+1]:
                 print('MFI reverse to downside')
+                tenhnical_cnt -= 1
                 flag = 1
         elif low_position and mfi[rev_past_days] > 20:
             if close[past_days] < close[past_days+1]:
                 print('MFI reverse to upside')
+                tenhnical_cnt += 1
                 flag = 1
 
         if flag:
@@ -306,4 +344,4 @@ def mfi_analysis(symbol, outputsize = 'compact'):
         rev_past_days = rev_past_days - 1
 
 
-    return
+    return tenhnical_cnt
