@@ -3,15 +3,18 @@ import operator
 import pandas as pd
 import numpy as np
 from pathlib import Path
-import time
 from symbol_list import *
 
-def get_quotes(name, outputsize = 'compact'):
+def get_quotes(name, outputsize = 'compact', key_cnt = 0):
     ts = TimeSeries(key, output_format='pandas')
-    if outputsize == 'full':
-        quotes, meta = ts.get_daily(symbol=name, outputsize='full')
-    else:
-        quotes, meta = ts.get_daily(symbol=name, outputsize='compact')
+    try:
+        if outputsize == 'full':
+            quotes, meta = ts.get_daily(symbol=name, outputsize='full')
+        else:
+            quotes, meta = ts.get_daily(symbol=name, outputsize='compact')
+    except:
+        print("get_quotes exception")
+    api_delay(key_cnt)
     return quotes
 
 def write_csv(path, data):
@@ -34,7 +37,7 @@ def remove_duplicate_and_write(path, quotes, data):
     quotes = (pd.concat([quotes2, quotes], axis=0, join='inner')).sort_values(by=['date'], ascending=False)
     quotes.to_csv(path, index=False)
 
-def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0):
+def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0, key_cnt = 0):
     if outputsize == 'full':
         symbol_file = 'data/' + symbol + '_full.csv'
     else:
@@ -42,7 +45,7 @@ def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0):
 
     if Path(symbol_file).is_file():
         if append == 1:
-            data = get_quotes(symbol, outputsize)
+            data = get_quotes(symbol, outputsize, key_cnt)
             if print_debug == 1:
                 print (symbol_file + " exist & append")
             append_csv(symbol_file, data)
@@ -51,18 +54,9 @@ def collect_quote(symbol, outputsize = 'compact', append = 0, print_debug = 0):
                 print (symbol_file + " exist")
             pass
     else:
-        data = get_quotes(symbol, outputsize)
+        data = get_quotes(symbol, outputsize, key_cnt)
         print (symbol_file + " created")
         write_csv(symbol_file, data)
     return symbol_file
 
-def collect_all_quotes(append_new, print_debug = 1):
-    cnt = 0
-    for s in my_symbols:
-        print (s)
-        file = collect_quote(s, append = append_new, print_debug = print_debug)
-        time.sleep(12)
-        cnt = cnt + 1
-        if cnt % 5 == 0:
-            time.sleep(5)
 

@@ -91,13 +91,4 @@ def candle_pattern_recognition(s, enable_plot = 0):
                 pass
 #    print(s + ' ^_^\n')
 
-    if enable_plot > 0:
-        trace = go.Candlestick(
-                    x = df['date'],
-                    open=op,
-                    high=hi,
-                    low=lo,
-                    close=cl)
-        plot_trace(trace, s+'.html')
-
-    return df
+    return

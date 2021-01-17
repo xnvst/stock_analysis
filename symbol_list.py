@@ -1,12 +1,52 @@
+import time
+
 key = 'B478G0MJQCKU8MKM'
 
 # set how many past days to check
-total_past_days = 1
+total_past_days = 4
 
 def read_symbols():
     quotes = pd.read_csv("./nasdaq.csv")
     for s in quotes["Symbol"]:
         print("'" + s + "',")
+
+def api_delay(cnt):
+    time.sleep(12)
+    cnt = cnt + 1
+    if cnt % 5 == 0:
+        time.sleep(5)
+
+my_symbols_now =[
+'AC.TO',
+'ACB',
+'AMZN',
+'DAL',
+'HD',
+'CRMD',
+'MFC',
+'MA',
+'NCLH',
+'V',
+'AAL',
+'T',
+'NBEV',
+'DKNG',
+'JNJ',
+'UVXY',
+'DLR.TO',
+'DOCU',
+'ARKW',
+'LU',
+'SWCH',
+'AGTC',
+'CRM',
+'GOCO',
+'LVS',
+'XPEV',
+'GM',
+'SE',
+'CQQQ'
+]
 
 my_symbols =[
 #'.DJI',
@@ -51,6 +91,7 @@ my_symbols =[
 'CSCO',
 'CVX',
 'DAO',
+'DAL',
 'DOCU',
 'DIS',
 'DLR',

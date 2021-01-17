@@ -59,7 +59,13 @@ pip install TA-Lib
 4.1 目前人工进行 (yahoo, fintel, finviz, youtube, futu, tiprank)
 4.2 ML (investigation)
 
+5. 资金流入 & draw chart according to symbol ---------------in progress
+
 6. 懒人炒股心经 (TBD)
+
+Steven:
+----1,学价量关系 2，趋势判断 3，盘口语言 4，机构做庄方法 （建仓吸筹， 洗盘， 拉升，出货）5，压力支撑判断
+----选票基础价量关系，K线位阶，图形结构，资金辅助增加胜率，先考虑大资金的态度，再看中小资金是否跟风
 
 
 ## reference

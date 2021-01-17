@@ -14,6 +14,7 @@ from mpl_finance import candlestick_ohlc
 import numpy
 
 from plotly.offline import plot
+from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 
 import backtrader as bt
@@ -83,8 +84,4 @@ def plot_candlestick(file):
 
     plt.show()
 
-
-def plot_trace(trace, name='tmp.html'):
-    data = [trace]
-    plot(data, filename=name)
 

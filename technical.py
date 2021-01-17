@@ -7,28 +7,25 @@ from alpha_vantage.techindicators import TechIndicators
 from quote_data import *
 from plot import *
 
-key_cnt = 0
-
-def api_delay(cnt):
-    time.sleep(12)
-    cnt = cnt + 1
-    if cnt % 5 == 0:
-        time.sleep(5)
-
-def technical_analysis(symbol, outputsize = 'compact'):
-    t1 = macd_analysis(symbol, outputsize, 0)
-    t2 = price_volume_analysis(symbol, outputsize, 0)
-    t3 = mfi_analysis(symbol, outputsize, 0)
+def technical_analysis(symbol, key_cnt = 0):
+    t1 = macd_analysis(symbol, key_cnt)
+    t2 = price_volume_analysis(symbol, key_cnt)
+    t3 = mfi_analysis(symbol, key_cnt)
     return t1, t2, t3
 
-def macd_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
+def macd_analysis(symbol, key_cnt = 0):
+    tenhnical_cnt_list = []
+
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
     # extract Final historical df
     df = pd.DataFrame(quotes)
 
     at = TechIndicators(key, output_format='pandas')
-    macd_data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
+    try:
+        macd_data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
+    except:
+        print("macd_analysis exception")
     #print(macd_data)
     api_delay(key_cnt)
 
@@ -40,6 +37,7 @@ def macd_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
     for index, row in macd_data.iterrows():
         #date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
         if past_days < total_past_days + 1:
+            tenhnical_cnt = 0
 
             flag1 = 0
             if dif[past_days] > 0 and dea[past_days] > 0:
@@ -122,22 +120,30 @@ def macd_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
                     print('********' + str(index) + '************************')
                     print(row)
                     print(df.loc[past_days])
+                    print('macd tenhnical_cnt: ' + str(tenhnical_cnt))
                 else:
                     print(index)
+                    print('macd tenhnical_cnt: ' + str(tenhnical_cnt))
                 print('----------------------------------------\n')
                 pass
 
+            tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
 
-    return tenhnical_cnt
+    return tenhnical_cnt_list
 
 
-def price_volume_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
+def price_volume_analysis(symbol, key_cnt = 0):
+    tenhnical_cnt_list = []
+
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
     # extract Final historical df
     df = pd.DataFrame(quotes)
 
+    op = df['1. open']
+    hi = df['2. high']
+    lo = df['3. low']
     close = df['4. close']
     volume = df['5. volume']
 
@@ -164,6 +170,7 @@ def price_volume_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
     past_days = 0
     while past_days < total_past_days + 1:
         #date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
+        tenhnical_cnt = 0
         flag = 0
 
         price_up = close[past_days] > short_close_mean * (1+price_alpha) and close[past_days] > long_close_mean * (1+price_alpha)
@@ -225,13 +232,27 @@ def price_volume_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
             if past_days == 0:
                 print('********' + df.loc[df.index[past_days]]['date'] + '************************')
                 print(df.loc[df.index[past_days]])
+                print('price_volume_analysis tenhnical_cnt: ' + str(tenhnical_cnt))
             else:
                 print(df.loc[df.index[past_days]])
+                print('price_volume_analysis tenhnical_cnt: ' + str(tenhnical_cnt))
             print('----------------------------------------\n')
 
+        tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
 
-    return tenhnical_cnt
+    if 0:
+        typical_price = (hi + lo + close)/3.0
+        raw_money_flow = typical_price * volume
+        past_days = 0
+        while past_days < total_past_days + 1:
+            print('----------------------------------------\n')
+            print(df.loc[df.index[past_days]]['date'])
+            print(raw_money_flow[past_days])
+            print('----------------------------------------\n')
+            past_days = past_days + 1
+
+    return tenhnical_cnt_list
 
 
 '''
@@ -272,7 +293,9 @@ def price_volume_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
 下午大跌次日买
 '''
 
-def mfi_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
+def mfi_analysis(symbol, key_cnt = 0):
+    tenhnical_cnt_list = []
+
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
     # extract Final historical df
@@ -280,7 +303,10 @@ def mfi_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
     close = df['4. close']
 
     at = TechIndicators(key, output_format='pandas')
-    data, meta_data = at.get_mfi(symbol, interval='daily', time_period=14, series_type='close')
+    try:
+        data, meta_data = at.get_mfi(symbol, interval='daily', time_period=14, series_type='close')
+    except:
+        print("mfi_analysis exception")
     mfi = data['MFI']
     #print(data)
     #print(mfi[-1])
@@ -302,6 +328,7 @@ def mfi_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
     past_days = 0
     rev_past_days = -1
     while past_days < total_past_days + 1:
+        tenhnical_cnt = 0
         flag = 0
 
         if mfi[rev_past_days] > 80:
@@ -336,12 +363,15 @@ def mfi_analysis(symbol, outputsize = 'compact', tenhnical_cnt = 0):
         if flag:
             if rev_past_days == 0:
                 print('********' + data.loc[data.index[rev_past_days]] + '************************')
+                print('mfi tenhnical_cnt: ' + str(tenhnical_cnt))
             else:
                 print(data.loc[data.index[rev_past_days]])
+                print('mfi tenhnical_cnt: ' + str(tenhnical_cnt))
             print('----------------------------------------\n')
 
+        tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
         rev_past_days = rev_past_days - 1
 
 
-    return tenhnical_cnt
+    return tenhnical_cnt_list
