@@ -7,13 +7,71 @@ from alpha_vantage.techindicators import TechIndicators
 from quote_data import *
 from plot import *
 
-def technical_analysis(symbol, key_cnt = 0):
-    t1 = macd_analysis(symbol, key_cnt)
-    t2 = price_volume_analysis(symbol, key_cnt)
-    t3 = mfi_analysis(symbol, key_cnt)
+def technical_analysis(symbol, key_cnt = 0, en_macd = 1, en_pv = 1, en_mfi = 1):
+    t1 = macd_analysis(symbol)
+    t2 = price_volume_analysis(symbol)
+    t3 = mfi_analysis(symbol)
     return t1, t2, t3
 
-def macd_analysis(symbol, key_cnt = 0):
+def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0):
+    symbol_file = 'data/' + symbol + '_macd.csv'
+
+    if Path(symbol_file).is_file():
+        if append == 1:
+            at = TechIndicators(key, output_format='pandas')
+            try:
+                data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
+            except:
+                print("macd_analysis exception")
+            api_delay(key_cnt)
+            if print_debug == 1:
+                print (symbol_file + " exist & append")
+            append_csv(symbol_file, data)
+        else:
+            if print_debug == 1:
+                print (symbol_file + " exist")
+            pass
+    else:
+        at = TechIndicators(key, output_format='pandas')
+        try:
+            data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
+        except:
+            print("macd_analysis exception")
+        api_delay(key_cnt)
+        print (symbol_file + " created")
+        write_csv(symbol_file, data)
+    return symbol_file
+
+def collect_mfi_data(symbol, append = 0, print_debug = 0, key_cnt = 0):
+    symbol_file = 'data/' + symbol + '_mfi.csv'
+
+    if Path(symbol_file).is_file():
+        if append == 1:
+            at = TechIndicators(key, output_format='pandas')
+            try:
+                data, meta_data = at.get_mfi(symbol, interval='daily', time_period=14, series_type='close')
+            except:
+                print("mfi_analysis exception")
+            api_delay(key_cnt)
+            if print_debug == 1:
+                print (symbol_file + " exist & append")
+            append_csv(symbol_file, data)
+        else:
+            if print_debug == 1:
+                print (symbol_file + " exist")
+            pass
+    else:
+        at = TechIndicators(key, output_format='pandas')
+        try:
+            data, meta_data = at.get_mfi(symbol, interval='daily', time_period=14, series_type='close')
+        except:
+            print("mfi_analysis exception")
+        api_delay(key_cnt)
+        print (symbol_file + " created")
+        write_csv(symbol_file, data)
+    return symbol_file
+
+def macd_analysis(symbol):
     tenhnical_cnt_list = []
 
     file = collect_quote(symbol, append = 0)
@@ -21,20 +79,16 @@ def macd_analysis(symbol, key_cnt = 0):
     # extract Final historical df
     df = pd.DataFrame(quotes)
 
-    at = TechIndicators(key, output_format='pandas')
-    try:
-        macd_data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
-    except:
-        print("macd_analysis exception")
-    #print(macd_data)
-    api_delay(key_cnt)
+    file = collect_macd_data(symbol, append = 0)
+    quotes = pd.read_csv(file)
+    df_macd = pd.DataFrame(quotes)
 
-    dif = macd_data['MACD']
-    dea = macd_data['MACD_Signal']
-    macd_hist = macd_data['MACD_Hist']
+    dif = df_macd['MACD']
+    dea = df_macd['MACD_Signal']
+    macd_hist = df_macd['MACD_Hist']
 
     past_days = 0
-    for index, row in macd_data.iterrows():
+    for index, row in df_macd.iterrows():
         #date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
         if past_days < total_past_days + 1:
             tenhnical_cnt = 0
@@ -117,12 +171,12 @@ def macd_analysis(symbol, key_cnt = 0):
 
             if flag1 or flag2 or flag3:
                 if past_days == 0:
-                    print('********' + str(index) + '************************')
+                    print('********' + df.loc[df.index[past_days]]['date'] + '************************')
                     print(row)
                     print(df.loc[past_days])
                     print('macd tenhnical_cnt: ' + str(tenhnical_cnt))
                 else:
-                    print(index)
+                    print(df.loc[df.index[past_days]]['date'])
                     print('macd tenhnical_cnt: ' + str(tenhnical_cnt))
                 print('----------------------------------------\n')
                 pass
@@ -133,7 +187,7 @@ def macd_analysis(symbol, key_cnt = 0):
     return tenhnical_cnt_list
 
 
-def price_volume_analysis(symbol, key_cnt = 0):
+def price_volume_analysis(symbol):
     tenhnical_cnt_list = []
 
     file = collect_quote(symbol, append = 0)
@@ -293,7 +347,7 @@ def price_volume_analysis(symbol, key_cnt = 0):
 下午大跌次日买
 '''
 
-def mfi_analysis(symbol, key_cnt = 0):
+def mfi_analysis(symbol):
     tenhnical_cnt_list = []
 
     file = collect_quote(symbol, append = 0)
@@ -302,15 +356,19 @@ def mfi_analysis(symbol, key_cnt = 0):
     df = pd.DataFrame(quotes)
     close = df['4. close']
 
-    at = TechIndicators(key, output_format='pandas')
     try:
-        data, meta_data = at.get_mfi(symbol, interval='daily', time_period=14, series_type='close')
+        file = collect_mfi_data(symbol, append = 0)
     except:
-        print("mfi_analysis exception")
-    mfi = data['MFI']
-    #print(data)
-    #print(mfi[-1])
-    api_delay(key_cnt)
+        print("collect_mfi_data exception")
+        return
+
+    quotes = pd.read_csv(file)
+    df_mfi = pd.DataFrame(quotes)
+
+    mfi = []
+    for index, row in df_mfi.iterrows():
+        mfi.append(df_mfi.loc[df_mfi.index[index]]['MFI'])
+    #print(mfi)
 
     short_period = 5
     long_period = 20
@@ -362,10 +420,10 @@ def mfi_analysis(symbol, key_cnt = 0):
 
         if flag:
             if rev_past_days == 0:
-                print('********' + data.loc[data.index[rev_past_days]] + '************************')
+                print('********' + df_mfi.loc[df_mfi.index[rev_past_days]]['date'] + '************************')
                 print('mfi tenhnical_cnt: ' + str(tenhnical_cnt))
             else:
-                print(data.loc[data.index[rev_past_days]])
+                print(df_mfi.loc[df_mfi.index[rev_past_days]]['date'])
                 print('mfi tenhnical_cnt: ' + str(tenhnical_cnt))
             print('----------------------------------------\n')
 

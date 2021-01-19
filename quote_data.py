@@ -14,6 +14,7 @@ def get_quotes(name, outputsize = 'compact', key_cnt = 0):
             quotes, meta = ts.get_daily(symbol=name, outputsize='compact')
     except:
         print("get_quotes exception")
+        return
     api_delay(key_cnt)
     return quotes
 

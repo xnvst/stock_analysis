@@ -59,7 +59,9 @@ pip install TA-Lib
 4.1 目前人工进行 (yahoo, fintel, finviz, youtube, futu, tiprank)
 4.2 ML (investigation)
 
-5. 资金流入 & draw chart according to symbol ---------------in progress
+5.
+5.1 draw chart according to symbol ---------------done
+5.2 futu api: 资金流入 etc. ---------------in progress
 
 6. 懒人炒股心经 (TBD)
 

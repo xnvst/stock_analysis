@@ -3,7 +3,7 @@ import time
 key = 'B478G0MJQCKU8MKM'
 
 # set how many past days to check
-total_past_days = 4
+total_past_days = 10 - 1
 
 def read_symbols():
     quotes = pd.read_csv("./nasdaq.csv")
@@ -17,6 +17,7 @@ def api_delay(cnt):
         time.sleep(5)
 
 my_symbols_now =[
+'AAPL',
 'AC.TO',
 'ACB',
 'AMZN',
@@ -49,8 +50,7 @@ my_symbols_now =[
 ]
 
 my_symbols =[
-#'.DJI',
-#'.SPX',
+'AAL',
 'AAOI',
 'AAPL',
 'AC.TO',
@@ -85,6 +85,7 @@ my_symbols =[
 'COST',
 'COUP',
 'CPT',
+'CQQQ',
 'CRM',
 'CRMD',
 'CRON',
@@ -92,6 +93,7 @@ my_symbols =[
 'CVX',
 'DAO',
 'DAL',
+'DKNG',
 'DOCU',
 'DIS',
 'DLR',
@@ -104,6 +106,7 @@ my_symbols =[
 'GBTC',
 'GILD',
 'GLD',
+'GM',
 'GNTX',
 'GOCO',
 'GOOG',
@@ -172,6 +175,7 @@ my_symbols =[
 'TWTR',
 'UBER',
 'UNH',
+'UVXY',
 'V',
 'VBIV',
 'VCR',
