@@ -61,7 +61,8 @@ pip install TA-Lib
 
 5.
 5.1 draw chart according to symbol ---------------done
-5.2 futu api: 资金流入 etc. ---------------in progress
+5.2 plot ema with candle ---------------in progress
+5.3 futu api: 资金流入 etc. ---------------in progress
 
 6. 懒人炒股心经 (TBD)
 

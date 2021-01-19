@@ -8,9 +8,15 @@ from quote_data import *
 from plot import *
 
 def technical_analysis(symbol, key_cnt = 0, en_macd = 1, en_pv = 1, en_mfi = 1):
-    t1 = macd_analysis(symbol)
-    t2 = price_volume_analysis(symbol)
-    t3 = mfi_analysis(symbol)
+    t1 = []
+    t2 = []
+    t3 = []
+    if en_macd:
+        t1 = macd_analysis(symbol)
+    if en_pv:
+        t2 = price_volume_analysis(symbol)
+    if en_mfi:
+        t3 = mfi_analysis(symbol)
     return t1, t2, t3
 
 def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0):

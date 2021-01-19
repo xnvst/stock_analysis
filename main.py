@@ -32,13 +32,13 @@ def all_analysis():
         # step 1 - collect quote
         file = collect_quote(s, outputsize = 'compact', append = 1, print_debug = 0, key_cnt = keycnt)
         collect_macd_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
-        collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
+        #collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
 
         # step 2 - analysis
         print('\n\n$$$----------------------------------------')
         print(s)
         candle_pattern_recognition(s)
-        t1, t2, t3 = technical_analysis(s, key_cnt = keycnt)
+        t1, t2, t3 = technical_analysis(s, key_cnt = keycnt, en_mfi = 0)
         print("symbol, macd, price_volume, mfi: \n" + s + ', ' + str(t1) + ', ' + str(t2) + ', ' + str(t3))
         technical_list.append((s, t1, t2, t3))
         print('###----------------------------------------\n\n')
