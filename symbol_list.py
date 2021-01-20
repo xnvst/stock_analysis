@@ -61,6 +61,7 @@ my_symbols =[
 'AKTS',
 'ALGN',
 'ALXN',
+'AMC',
 'AMD',
 'AMRN',
 'AMZN',

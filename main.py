@@ -25,31 +25,37 @@ def SetVolumeColor(op, cl):
     else:
         return "green"
 
-def all_analysis():
+def all_collect_quotes():
     keycnt = 0
-    technical_list = []
     for s in my_symbols:
         # step 1 - collect quote
+        print(s)
         file = collect_quote(s, outputsize = 'compact', append = 1, print_debug = 0, key_cnt = keycnt)
         collect_macd_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
-        #collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
+        collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
+        keycnt += 1
+        print('keycnt = ', str(keycnt))
+    return
 
-        # step 2 - analysis
+def all_symbol_analysis():
+    technical_list = []
+    for s in my_symbols:
         print('\n\n$$$----------------------------------------')
         print(s)
         candle_pattern_recognition(s)
-        t1, t2, t3 = technical_analysis(s, key_cnt = keycnt, en_mfi = 0)
+        t1, dfi, dea, t2, t3, mfi = technical_analysis(s)
         print("symbol, macd, price_volume, mfi: \n" + s + ', ' + str(t1) + ', ' + str(t2) + ', ' + str(t3))
         technical_list.append((s, t1, t2, t3))
         print('###----------------------------------------\n\n')
-
-        keycnt += 1
-        print('keycnt = ', str(keycnt))
-
     technical_list.sort(key = (lambda elem : (elem[1], elem[2], elem[3])), reverse=True)
     print("symbol, macd, price_volume, mfi\n")
     for x in range(len(technical_list)):
         print(technical_list[x])
+    return
+
+def active_symbol_analysis():
+    for s in my_symbols_now:
+        single_analysis(s)
     return
 
 def single_analysis(s):
@@ -72,51 +78,107 @@ def single_analysis(s):
                 low=lo,
                 close=cl)
 
-    data0 = go.Bar(
+    sma_10 = []
+    sma_20 = []
+    sma_50 = []
+    for i in range(180):
+        x = np.mean(cl[i:10-1+i])
+        sma_10.append(x)
+        x = np.mean(cl[i:20-1+i])
+        sma_20.append(x)
+        x = np.mean(cl[i:50-1+i])
+        sma_50.append(x)
+    data_sma_10 = go.Scatter(
             x=df['date'],
-            y=volume, #df['4. close'],
-            name='volume',
-            marker=dict(color=list(map(SetVolumeColor, op, cl))),
-            #marker=color,
+            y=sma_10,
+            name='sma_10',
+            marker=dict(color='orange'),
+            )
+    data_sma_20 = go.Scatter(
+            x=df['date'],
+            y=sma_20,
+            name='sma_20',
+            marker=dict(color='purple'),
+            )
+    data_sma_50 = go.Scatter(
+            x=df['date'],
+            y=sma_50,
+            name='sma_50',
+            marker=dict(color='grey'),
             )
 
-    t1, t2, t3 = technical_analysis(s, key_cnt = 0)
+    data0 = go.Bar(
+            x=df['date'],
+            y=volume,
+            name='volume',
+            marker=dict(color=list(map(SetVolumeColor, op, cl))),
+            )
+
+    candle_pattern_recognition(s)
+    t1, dfi, dea, t2, t3, mfi = technical_analysis(s)
 
     data1 = go.Bar(
             x=df['date'],
-            y=t1, #df['4. close'],
-            name='macd',
+            y=t1,
+            name='macd score',
             marker=dict(color=list(map(SetColor, t1))),
-            #marker=color,
             )
+    data_dfi = go.Scatter(
+            x=df['date'],
+            y=dfi,
+            name='dfi',
+            marker=dict(color='green'),
+            )
+    data_dea = go.Scatter(
+            x=df['date'],
+            y=dea,
+            name='dea',
+            marker=dict(color='red'),
+            )
+
     data2 = go.Bar(
             x=df['date'],
-            y=t2, #df['4. close'],
-            name='price_volume',
+            y=t2,
+            name='price_volume score',
             marker=dict(color=list(map(SetColor, t2))),
-            #marker=color,
             )
+
     data3 = go.Bar(
             x=df['date'],
-            y=t3, #df['4. close'],
+            y=np.multiply(t3, 10),
+            name='mfi score',
+            marker=dict(color=list(map(SetColor, t3))),
+            )
+    data_mfi = go.Scatter(
+            x=df['date'],
+            y=mfi,
             name='mfi',
             marker=dict(color=list(map(SetColor, t3))),
-            #marker=color,
             )
 
     #fig = go.Figure([trace, data2])    # plot together
 
-    fig = make_subplots(rows=6, cols=1)
+    fig = make_subplots(rows=8, cols=1)
     fig.add_trace(trace, row=1, col=1)
+    fig.add_trace(data_sma_10, row=1, col=1)
+    fig.add_trace(data_sma_20, row=1, col=1)
+    fig.add_trace(data_sma_50, row=1, col=1)
     fig.add_trace(data0, row=3, col=1)
-    fig.add_trace(data1, row=4, col=1)
-    fig.add_trace(data2, row=5, col=1)
-    fig.add_trace(data3, row=6, col=1)
+
+    fig.add_trace(data_dfi, row=4, col=1)
+    fig.add_trace(data_dea, row=4, col=1)
+    fig.add_trace(data1, row=5, col=1)
+
+    fig.add_trace(data2, row=6, col=1)
+
+    fig.add_trace(data_mfi, row=7, col=1)
+    fig.add_trace(data3, row=8, col=1)
 
     #candle_pattern_recognition(s, enable_plot = plot)
     fig.update_layout(
         title=s,
         height=1200,
+        xaxis_rangeslider_visible=False,
         #yaxis_title='AAPL Stock',
         #shapes = [dict(
         #    x0=s_date, x1=s_date, y0=0, y1=1, xref='x', yref='paper',
@@ -126,11 +188,16 @@ def single_analysis(s):
         #    showarrow=False, xanchor='left', text='Increase Period Begins')]
     )
 
-    fig['layout']['yaxis1'].update(domain=[0.7, 1])
-    fig['layout']['yaxis3'].update(domain=[0.3, 0.5])
-    fig['layout']['yaxis4'].update(domain=[0.2, 0.29])
-    fig['layout']['yaxis5'].update(domain=[0.1, 0.19])
-    fig['layout']['yaxis6'].update(domain=[0, 0.09])
+    h1 = 0.15
+    h2 = 0.05
+    h_space = 0.01
+    fig['layout']['yaxis1'].update(domain=[6*h_space+3*h2+3*h1, 1])
+    fig['layout']['yaxis3'].update(domain=[5*h_space+3*h2+2*h1, 5*h_space+3*h2+3*h1])
+    fig['layout']['yaxis4'].update(domain=[4*h_space+3*h2+h1, 4*h_space+3*h2+2*h1])
+    fig['layout']['yaxis5'].update(domain=[3*h_space+2*h2+h1, 3*h_space+3*h2+h1])
+    fig['layout']['yaxis6'].update(domain=[2*h_space+h2+h1, 2*h_space+2*h2+h1])
+    fig['layout']['yaxis7'].update(domain=[h_space+h2, h_space+h2+h1])
+    fig['layout']['yaxis8'].update(domain=[0, h2])
 
     fig.write_html('result/'+s+'.html')
     fig.show()
@@ -169,8 +236,12 @@ if __name__ == "__main__":
     print('welcome!\n')
 
     symbol = main(sys.argv[1:])
-    if symbol == 'all':
-        all_analysis()
+    if symbol == 'quote':
+        all_collect_quotes()
+    elif symbol == 'all':
+        all_symbol_analysis()
+    elif symbol == 'now':
+        active_symbol_analysis()
     else:
         single_analysis(symbol)
 

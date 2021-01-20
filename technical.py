@@ -7,17 +7,20 @@ from alpha_vantage.techindicators import TechIndicators
 from quote_data import *
 from plot import *
 
-def technical_analysis(symbol, key_cnt = 0, en_macd = 1, en_pv = 1, en_mfi = 1):
+def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 1):
     t1 = []
     t2 = []
     t3 = []
+    dfi = []
+    dea = []
+    mfi = []
     if en_macd:
-        t1 = macd_analysis(symbol)
+        t1, dfi, dea = macd_analysis(symbol)
     if en_pv:
         t2 = price_volume_analysis(symbol)
     if en_mfi:
-        t3 = mfi_analysis(symbol)
-    return t1, t2, t3
+        t3, mfi = mfi_analysis(symbol)
+    return t1, dfi, dea, t2, t3, mfi
 
 def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0):
     symbol_file = 'data/' + symbol + '_macd.csv'
@@ -190,7 +193,7 @@ def macd_analysis(symbol):
             tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
 
-    return tenhnical_cnt_list
+    return tenhnical_cnt_list, dif, dea
 
 
 def price_volume_analysis(symbol):
@@ -381,8 +384,8 @@ def mfi_analysis(symbol):
 
     price_alpha = 0.02
 
-    short_mfi_mean = np.mean(mfi[-1-short_period:-1])
-    long_mfi_mean = np.mean(mfi[-1-short_period:-1])
+    short_mfi_mean = np.mean(mfi[:short_period])
+    long_mfi_mean = np.mean(mfi[:long_period])
     #print(short_mfi_mean)
 
     high_position = short_mfi_mean > 80    #高位
@@ -390,52 +393,50 @@ def mfi_analysis(symbol):
 
     # mfi is in reverse order of date
     past_days = 0
-    rev_past_days = -1
     while past_days < total_past_days + 1:
         tenhnical_cnt = 0
         flag = 0
 
-        if mfi[rev_past_days] > 80:
+        if mfi[past_days] > 80:
             print('MFI 超买')
             tenhnical_cnt -= 0.5
             flag = 1
-        elif mfi[rev_past_days] < 20:
+        elif mfi[past_days] < 20:
             print('MFI 超卖')
             tenhnical_cnt += 0.5
             flag = 1
 
-        if mfi[rev_past_days-1] > 80 and mfi[rev_past_days] < 80:
+        if mfi[past_days+1] > 80 and mfi[past_days] < 80:
             print('MFI short trade')
             tenhnical_cnt -= 1
             flag = 1
-        elif mfi[rev_past_days-1] < 20 and mfi[rev_past_days] > 20:
+        elif mfi[past_days+1] < 20 and mfi[past_days] > 20:
             print('MFI long trade')
             tenhnical_cnt += 1
             flag = 1
 
-        if high_position and mfi[rev_past_days] < 80:
+        if high_position and mfi[past_days] < 80:
             if close[past_days] > close[past_days+1]:
                 print('MFI reverse to downside')
                 tenhnical_cnt -= 1
                 flag = 1
-        elif low_position and mfi[rev_past_days] > 20:
+        elif low_position and mfi[past_days] > 20:
             if close[past_days] < close[past_days+1]:
                 print('MFI reverse to upside')
                 tenhnical_cnt += 1
                 flag = 1
 
         if flag:
-            if rev_past_days == 0:
-                print('********' + df_mfi.loc[df_mfi.index[rev_past_days]]['date'] + '************************')
+            if past_days == 0:
+                print('********' + df_mfi.loc[df_mfi.index[past_days]]['date'] + '************************')
                 print('mfi tenhnical_cnt: ' + str(tenhnical_cnt))
             else:
-                print(df_mfi.loc[df_mfi.index[rev_past_days]]['date'])
+                print(df_mfi.loc[df_mfi.index[past_days]]['date'])
                 print('mfi tenhnical_cnt: ' + str(tenhnical_cnt))
             print('----------------------------------------\n')
 
         tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
-        rev_past_days = rev_past_days - 1
 
 
-    return tenhnical_cnt_list
+    return tenhnical_cnt_list, mfi
