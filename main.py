@@ -34,7 +34,7 @@ def all_collect_quotes():
             continue
         else:
             pass
-        file = collect_quote(s, outputsize = 'compact', append = 1, print_debug = 0, key_cnt = keycnt)
+        collect_quote(s, outputsize = 'compact', append = 1, print_debug = 0, key_cnt = keycnt)
         collect_macd_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
         collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
         keycnt += 1
@@ -88,6 +88,7 @@ def single_analysis(s, en_plot = 1):
     sma_10 = []
     sma_20 = []
     sma_50 = []
+    sma_200 = []
     for i in range(180):
         x = np.mean(cl[i:10-1+i])
         sma_10.append(x)
@@ -95,6 +96,8 @@ def single_analysis(s, en_plot = 1):
         sma_20.append(x)
         x = np.mean(cl[i:50-1+i])
         sma_50.append(x)
+        x = np.mean(cl[i:200-1+i])
+        sma_200.append(x)
     data_sma_10 = go.Scatter(
             x=df['date'],
             y=sma_10,
@@ -111,6 +114,12 @@ def single_analysis(s, en_plot = 1):
             x=df['date'],
             y=sma_50,
             name='sma_50',
+            marker=dict(color='blue'),
+            )
+    data_sma_200 = go.Scatter(
+            x=df['date'],
+            y=sma_200,
+            name='sma_200',
             marker=dict(color='grey'),
             )
 
@@ -193,6 +202,7 @@ def single_analysis(s, en_plot = 1):
     fig.add_trace(data_sma_10, row=1, col=1)
     fig.add_trace(data_sma_20, row=1, col=1)
     fig.add_trace(data_sma_50, row=1, col=1)
+    fig.add_trace(data_sma_200, row=1, col=1)
     fig.add_trace(data0, row=3, col=1)
 
     fig.add_trace(data_dfi, row=4, col=1)
@@ -252,8 +262,9 @@ def single_analysis(s, en_plot = 1):
 
 def main(argv):
    symbol = ''
+   quote = 0
    try:
-      opts, args = getopt.getopt(argv,"hs:")
+      opts, args = getopt.getopt(argv,"hsq:")
    except getopt.GetoptError:
       print('main.py -s <symbol>')
       sys.exit(2)
@@ -261,15 +272,16 @@ def main(argv):
       if opt == '-h':
          print('main.py -s <symbol>')
          sys.exit()
-      elif opt in ("-s"):
+      elif opt in ("-q"):
          symbol = arg
+         quote = 1
    print('symbol is ' + symbol)
-   return symbol
+   return symbol, quote
 
 if __name__ == "__main__":
     print('welcome!\n')
 
-    symbol = main(sys.argv[1:])
+    symbol, quote = main(sys.argv[1:])
     if symbol == 'quote':
         all_collect_quotes()
     elif symbol == 'all':
@@ -277,8 +289,11 @@ if __name__ == "__main__":
     elif symbol == 'now':
         active_symbol_analysis()
     else:
+        if quote == 1:
+            collect_quote(symbol, outputsize = 'compact', append = 1, print_debug = 0, key_cnt = 0)
+            collect_macd_data(symbol, append = 1, print_debug = 0, key_cnt = 0)
+            collect_mfi_data(symbol, append = 1, print_debug = 0, key_cnt = 0)
         single_analysis(symbol)
-
 
 #    quotes = pd.read_csv("./nasdaq.csv")
 #    for s in quotes["Symbol"]:

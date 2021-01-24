@@ -50,6 +50,9 @@ my_symbols_now =[
 ]
 
 my_symbols =[
+'QQQ',
+'CQQQ',
+'SPY',
 'AAL',
 'AAOI',
 'AAPL',
@@ -66,6 +69,11 @@ my_symbols =[
 'AMRN',
 'AMZN',
 'APT',
+'ARKK',
+'ARKQ',
+'ARKF',
+'ARKW',
+'ARKG',
 'ASHR',
 'AZN',
 'AZO',
