@@ -30,6 +30,10 @@ def all_collect_quotes():
     for s in my_symbols:
         # step 1 - collect quote
         print(s)
+        if s != 'INSG' and keycnt == 0:
+            continue
+        else:
+            pass
         file = collect_quote(s, outputsize = 'compact', append = 1, print_debug = 0, key_cnt = keycnt)
         collect_macd_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
         collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
@@ -43,7 +47,7 @@ def all_symbol_analysis():
         print('\n\n$$$----------------------------------------')
         print(s)
         candle_pattern_recognition(s)
-        t1, dfi, dea, t2, t3, mfi = technical_analysis(s)
+        t1, dfi, dea, macd_hist, t2, t3, mfi = technical_analysis(s)
         print("symbol, macd, price_volume, mfi: \n" + s + ', ' + str(t1) + ', ' + str(t2) + ', ' + str(t3))
         technical_list.append((s, t1, t2, t3))
         print('###----------------------------------------\n\n')
@@ -55,10 +59,13 @@ def all_symbol_analysis():
 
 def active_symbol_analysis():
     for s in my_symbols_now:
+        print('\n\n$$$----------------------------------------')
+        print(s)
         single_analysis(s)
+        print('###----------------------------------------\n\n')
     return
 
-def single_analysis(s):
+def single_analysis(s, en_plot = 1):
     file = collect_quote(s, append = 0)
     quotes = pd.read_csv(file)
     df = pd.DataFrame(quotes)
@@ -115,7 +122,7 @@ def single_analysis(s):
             )
 
     candle_pattern_recognition(s)
-    t1, dfi, dea, t2, t3, mfi = technical_analysis(s)
+    t1, dfi, dea, macd_hist, t2, t3, mfi = technical_analysis(s)
 
     data1 = go.Bar(
             x=df['date'],
@@ -135,6 +142,12 @@ def single_analysis(s):
             name='dea',
             marker=dict(color='red'),
             )
+    data_macd_hist = go.Bar(
+            x=df['date'],
+            y=macd_hist,
+            name='macd_hist',
+            marker=dict(color=list(map(SetColor, macd_hist))),
+            )
 
     data2 = go.Bar(
             x=df['date'],
@@ -145,7 +158,7 @@ def single_analysis(s):
 
     data3 = go.Bar(
             x=df['date'],
-            y=np.multiply(t3, 10),
+            y=t3,
             name='mfi score',
             marker=dict(color=list(map(SetColor, t3))),
             )
@@ -153,7 +166,24 @@ def single_analysis(s):
             x=df['date'],
             y=mfi,
             name='mfi',
-            marker=dict(color=list(map(SetColor, t3))),
+            marker=dict(color='black'),
+            )
+    mfi_20 = []
+    mfi_80 = []
+    for i in range(180):
+        mfi_20.append(20)
+        mfi_80.append(80)
+    data_mfi_20 = go.Scatter(
+            x=df['date'],
+            y=mfi_20,
+            name='mfi',
+            marker=dict(color='green'),
+            )
+    data_mfi_80 = go.Scatter(
+            x=df['date'],
+            y=mfi_80,
+            name='mfi',
+            marker=dict(color='red'),
             )
 
     #fig = go.Figure([trace, data2])    # plot together
@@ -167,11 +197,14 @@ def single_analysis(s):
 
     fig.add_trace(data_dfi, row=4, col=1)
     fig.add_trace(data_dea, row=4, col=1)
+    fig.add_trace(data_macd_hist, row=4, col=1)
     fig.add_trace(data1, row=5, col=1)
 
     fig.add_trace(data2, row=6, col=1)
 
     fig.add_trace(data_mfi, row=7, col=1)
+    fig.add_trace(data_mfi_20, row=7, col=1)
+    fig.add_trace(data_mfi_80, row=7, col=1)
     fig.add_trace(data3, row=8, col=1)
 
     #candle_pattern_recognition(s, enable_plot = plot)
@@ -199,8 +232,9 @@ def single_analysis(s):
     fig['layout']['yaxis7'].update(domain=[h_space+h2, h_space+h2+h1])
     fig['layout']['yaxis8'].update(domain=[0, h2])
 
-    fig.write_html('result/'+s+'.html')
-    fig.show()
+    if en_plot:
+        fig.write_html('result/'+s+'.html')
+        fig.show()
     return
 
 '''

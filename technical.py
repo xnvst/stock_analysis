@@ -14,13 +14,14 @@ def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 1):
     dfi = []
     dea = []
     mfi = []
+    macd_hist = []
     if en_macd:
-        t1, dfi, dea = macd_analysis(symbol)
+        t1, dfi, dea, macd_hist = macd_analysis(symbol)
     if en_pv:
         t2 = price_volume_analysis(symbol)
     if en_mfi:
         t3, mfi = mfi_analysis(symbol)
-    return t1, dfi, dea, t2, t3, mfi
+    return t1, dfi, dea, macd_hist, t2, t3, mfi
 
 def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0):
     symbol_file = 'data/' + symbol + '_macd.csv'
@@ -92,7 +93,7 @@ def macd_analysis(symbol):
     quotes = pd.read_csv(file)
     df_macd = pd.DataFrame(quotes)
 
-    dif = df_macd['MACD']
+    dfi = df_macd['MACD']
     dea = df_macd['MACD_Signal']
     macd_hist = df_macd['MACD_Hist']
 
@@ -103,20 +104,20 @@ def macd_analysis(symbol):
             tenhnical_cnt = 0
 
             flag1 = 0
-            if dif[past_days] > 0 and dea[past_days] > 0:
+            if dfi[past_days] > 0 and dea[past_days] > 0:
                 if macd_hist[past_days] > 0 and macd_hist[past_days+1] < 0:
                     print('macd bull 1.1: 金叉')
                     tenhnical_cnt += 2
                     flag1 = 1
-                elif dif[past_days] > dif[past_days+1] and dea[past_days] > dea[past_days+1]:
+                elif dfi[past_days] > dfi[past_days+1] and dea[past_days] > dea[past_days+1]:
                     print('macd bull 1.2: 多头行情中,可以买入或持股')
                     tenhnical_cnt += 0.5
                     flag1 = 1
-                elif dif[past_days] < dif[past_days+1] and dea[past_days] < dea[past_days+1]:
+                elif dfi[past_days] < dfi[past_days+1] and dea[past_days] < dea[past_days+1]:
                     print('macd bear 1.3: 退潮阶段,股票将下跌,可以卖出股票和观望')
                     tenhnical_cnt -= 1
                     flag1 = 1
-            elif dif[past_days] < 0 and dea[past_days] < 0:
+            elif dfi[past_days] < 0 and dea[past_days] < 0:
                 if macd_hist[past_days] < 0 and macd_hist[past_days+1] > 0:
                     print('macd bear 1.1: 死叉')
                     tenhnical_cnt -= 2
@@ -125,11 +126,11 @@ def macd_analysis(symbol):
                     print('macd bull 1.3: 金叉2')
                     tenhnical_cnt += 1.5
                     flag1 = 1
-                elif dif[past_days] < dif[past_days+1] and dea[past_days] < dea[past_days+1]:
+                elif dfi[past_days] < dfi[past_days+1] and dea[past_days] < dea[past_days+1]:
                     print('macd bear 1.2: 空头行情中,可以卖出股票或观望')
                     tenhnical_cnt -= 0.5
                     flag1 = 1
-                elif dif[past_days] > dif[past_days+1] and dea[past_days] > dea[past_days+1]:
+                elif dfi[past_days] > dfi[past_days+1] and dea[past_days] > dea[past_days+1]:
                     print('macd bull 1.4: 行情即将启动,股票将上涨,可以买进股票或持股待涨')
                     tenhnical_cnt += 1
                     flag1 = 1
@@ -193,7 +194,7 @@ def macd_analysis(symbol):
             tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
 
-    return tenhnical_cnt_list, dif, dea
+    return tenhnical_cnt_list, dfi, dea, macd_hist
 
 
 def price_volume_analysis(symbol):
@@ -365,6 +366,11 @@ def mfi_analysis(symbol):
     df = pd.DataFrame(quotes)
     close = df['4. close']
 
+    sma_200 = []
+    for i in range(180):
+        x = np.mean(close[i:200-1+i])
+        sma_200.append(x)
+
     try:
         file = collect_mfi_data(symbol, append = 0)
     except:
@@ -397,34 +403,34 @@ def mfi_analysis(symbol):
         tenhnical_cnt = 0
         flag = 0
 
-        if mfi[past_days] > 80:
+#if prive > 200MA ignore sell
+#if price < 200MA ignore buy
+        ignore_sell = 0
+        ignore_buy = 0
+        if close[past_days] > sma_200[past_days]:
+            ignore_sell = 1
+        else:
+            ignore_buy = 1
+
+        if mfi[past_days] > 80 and not(ignore_sell):
             print('MFI 超买')
             tenhnical_cnt -= 0.5
             flag = 1
-        elif mfi[past_days] < 20:
+        elif mfi[past_days] < 20 and not(ignore_buy):
             print('MFI 超卖')
             tenhnical_cnt += 0.5
             flag = 1
 
-        if mfi[past_days+1] > 80 and mfi[past_days] < 80:
+        if (mfi[past_days+1] > 80 or high_position) and mfi[past_days] < 80 and not(ignore_sell):
             print('MFI short trade')
             tenhnical_cnt -= 1
             flag = 1
-        elif mfi[past_days+1] < 20 and mfi[past_days] > 20:
+        elif (mfi[past_days+1] < 20 or low_position) and mfi[past_days] > 20 and not(ignore_buy):
             print('MFI long trade')
             tenhnical_cnt += 1
             flag = 1
 
-        if high_position and mfi[past_days] < 80:
-            if close[past_days] > close[past_days+1]:
-                print('MFI reverse to downside')
-                tenhnical_cnt -= 1
-                flag = 1
-        elif low_position and mfi[past_days] > 20:
-            if close[past_days] < close[past_days+1]:
-                print('MFI reverse to upside')
-                tenhnical_cnt += 1
-                flag = 1
+        #TODO: check price & mfi divergence: price up, mfi ~80 and down; price down, mfi ~20 and up
 
         if flag:
             if past_days == 0:

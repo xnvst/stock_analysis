@@ -56,19 +56,19 @@ pip install TA-Lib
 3. candle stick plot better ---------------done
 
 4. news feed (基本面 & 板块分析 & 机构持仓 & 资金流入)
-4.1 目前人工进行 (yahoo, fintel, finviz, youtube, futu, tiprank)
+4.1 目前人工进行 (yahoo, finviz, youtube, futu, webull)
 4.2 ML (investigation)
 
 5.
 5.1 draw chart according to symbol ---------------done
-5.2 plot ema with candle ---------------in progress
-5.3 futu api: 资金流入 etc. ---------------in progress
+5.2 plot ema with candle ---------------done
+5.3 mfi ---------------done
 
-6. 懒人炒股心经 (TBD)
 
 Steven:
 ----1,学价量关系 2，趋势判断 3，盘口语言 4，机构做庄方法 （建仓吸筹， 洗盘， 拉升，出货）5，压力支撑判断
 ----选票基础价量关系，K线位阶，图形结构，资金辅助增加胜率，先考虑大资金的态度，再看中小资金是否跟风
+----盘口语言
 
 
 ## reference

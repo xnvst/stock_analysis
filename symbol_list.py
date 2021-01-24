@@ -100,6 +100,7 @@ my_symbols =[
 'DLR',
 'DLR.TO',
 'EL',
+'ENB.TO',
 'ESS',
 'FB',
 'FSLY',
@@ -185,11 +186,13 @@ my_symbols =[
 'VLDR',
 'VOO',
 'VRTX',
+'WELL.TO',
 'XLE',
 'XLNX',
 'XLV',
 'XPEV',
 'XNET',
+'XSP.TO',
 'ZBRA',
 ]
 
