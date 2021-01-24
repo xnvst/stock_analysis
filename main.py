@@ -264,7 +264,7 @@ def main(argv):
    symbol = ''
    quote = 0
    try:
-      opts, args = getopt.getopt(argv,"hsq:")
+      opts, args = getopt.getopt(argv,"hq:s:")
    except getopt.GetoptError:
       print('main.py -s <symbol>')
       sys.exit(2)
@@ -272,6 +272,8 @@ def main(argv):
       if opt == '-h':
          print('main.py -s <symbol>')
          sys.exit()
+      elif opt in ("-s"):
+         symbol = arg
       elif opt in ("-q"):
          symbol = arg
          quote = 1
