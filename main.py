@@ -30,13 +30,14 @@ def all_collect_quotes():
     for s in my_symbols:
         # step 1 - collect quote
         print(s)
-        if s != 'INSG' and keycnt == 0:
-            continue
-        else:
-            pass
+        #if s != 'BMO' and keycnt == 0:
+        #    continue
+        #else:
+        #    pass
         collect_quote(s, outputsize = 'compact', append = 1, print_debug = 0, key_cnt = keycnt)
         collect_macd_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
-        collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
+        if 0:   # mfi not having much information, disable to save time
+            collect_mfi_data(s, append = 1, print_debug = 0, key_cnt = keycnt)
         keycnt += 1
         print('keycnt = ', str(keycnt))
     return
@@ -45,27 +46,19 @@ def all_symbol_analysis():
     technical_list = []
     for s in my_symbols:
         print('\n\n$$$----------------------------------------')
-        print(s)
-        candle_pattern_recognition(s)
-        t1, dfi, dea, macd_hist, t2, t3, mfi = technical_analysis(s)
-        print("symbol, macd, price_volume, mfi: \n" + s + ', ' + str(t1) + ', ' + str(t2) + ', ' + str(t3))
-        technical_list.append((s, t1, t2, t3))
+        t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, candle_score = single_analysis(s, en_plot = 0)
+        print("symbol, macd, price_volume, mfi: \n" + s + ', ' + str(t1) + ', ' + str(t2) + ', ' + str(t3)+ ', ' + str(candle_score))
+        technical_list.append((s, t1, t2, t3, candle_score))
         print('###----------------------------------------\n\n')
-    technical_list.sort(key = (lambda elem : (elem[1], elem[2], elem[3])), reverse=True)
+    #technical_list.sort(key = (lambda elem : (elem[1][0] + elem[2][0] + elem[3][0] + elem[4])), reverse=True)
+    technical_list.sort(key = (lambda elem : (elem[1][0] + elem[2][0] + elem[4])), reverse=True)
     print("symbol, macd, price_volume, mfi\n")
     for x in range(len(technical_list)):
         print(technical_list[x])
     return
 
-def active_symbol_analysis():
-    for s in my_symbols_now:
-        print('\n\n$$$----------------------------------------')
-        print(s)
-        single_analysis(s)
-        print('###----------------------------------------\n\n')
-    return
-
 def single_analysis(s, en_plot = 1):
+    print(s)
     file = collect_quote(s, append = 0)
     quotes = pd.read_csv(file)
     df = pd.DataFrame(quotes)
@@ -130,8 +123,8 @@ def single_analysis(s, en_plot = 1):
             marker=dict(color=list(map(SetVolumeColor, op, cl))),
             )
 
-    candle_pattern_recognition(s)
-    t1, dfi, dea, macd_hist, t2, t3, mfi = technical_analysis(s)
+    candle_str, candle_score = candle_pattern_recognition(s)
+    t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J = technical_analysis(s)
 
     data1 = go.Bar(
             x=df['date'],
@@ -177,22 +170,50 @@ def single_analysis(s, en_plot = 1):
             name='mfi',
             marker=dict(color='black'),
             )
+
     mfi_20 = []
+    mfi_50 = []
     mfi_80 = []
     for i in range(180):
         mfi_20.append(20)
         mfi_80.append(80)
+        mfi_50.append(50)
     data_mfi_20 = go.Scatter(
             x=df['date'],
             y=mfi_20,
-            name='mfi',
+            #name='20',
             marker=dict(color='green'),
+            )
+    data_mfi_50 = go.Scatter(
+            x=df['date'],
+            y=mfi_50,
+            #name='mfi',
+            marker=dict(color='grey'),
             )
     data_mfi_80 = go.Scatter(
             x=df['date'],
             y=mfi_80,
-            name='mfi',
+            #name='mfi',
             marker=dict(color='red'),
+            )
+
+    data_K = go.Scatter(
+            x=df['date'],
+            y=K,
+            name='K',
+            marker=dict(color='orange'),
+            )
+    data_D = go.Scatter(
+            x=df['date'],
+            y=D,
+            name='D',
+            marker=dict(color='blue'),
+            )
+    data_J = go.Scatter(
+            x=df['date'],
+            y=J,
+            name='J',
+            marker=dict(color='purple'),
             )
 
     #fig = go.Figure([trace, data2])    # plot together
@@ -208,7 +229,13 @@ def single_analysis(s, en_plot = 1):
     fig.add_trace(data_dfi, row=4, col=1)
     fig.add_trace(data_dea, row=4, col=1)
     fig.add_trace(data_macd_hist, row=4, col=1)
-    fig.add_trace(data1, row=5, col=1)
+
+    fig.add_trace(data_K, row=5, col=1)
+    fig.add_trace(data_D, row=5, col=1)
+    fig.add_trace(data_J, row=5, col=1)
+    fig.add_trace(data_mfi_20, row=5, col=1)
+    fig.add_trace(data_mfi_50, row=5, col=1)
+    fig.add_trace(data_mfi_80, row=5, col=1)
 
     fig.add_trace(data2, row=6, col=1)
 
@@ -217,7 +244,9 @@ def single_analysis(s, en_plot = 1):
     fig.add_trace(data_mfi_80, row=7, col=1)
     fig.add_trace(data3, row=8, col=1)
 
-    #candle_pattern_recognition(s, enable_plot = plot)
+    fig.add_trace(data1, row=8, col=1)
+
+    text_str = 'macd: ' + macd_str+' \nprice_volume: '+t2_str+' \nmfi: '+t3_str+' \ncandle: '+candle_str
     fig.update_layout(
         title=s,
         height=1200,
@@ -226,13 +255,13 @@ def single_analysis(s, en_plot = 1):
         #shapes = [dict(
         #    x0=s_date, x1=s_date, y0=0, y1=1, xref='x', yref='paper',
         #    line_width=2)],
-        #annotations=[dict(
-        #    x=s_date, y=-0.05, xref='x', yref='paper',
-        #    showarrow=False, xanchor='left', text='Increase Period Begins')]
+        annotations=[dict(
+            x=0, y=-0.05, xref='paper', yref='paper',
+            showarrow=False, xanchor='left', text=text_str)]
     )
 
-    h1 = 0.15
-    h2 = 0.05
+    h1 = 0.12
+    h2 = 0.1
     h_space = 0.01
     fig['layout']['yaxis1'].update(domain=[6*h_space+3*h2+3*h1, 1])
     fig['layout']['yaxis3'].update(domain=[5*h_space+3*h2+2*h1, 5*h_space+3*h2+3*h1])
@@ -243,9 +272,9 @@ def single_analysis(s, en_plot = 1):
     fig['layout']['yaxis8'].update(domain=[0, h2])
 
     if en_plot:
-        fig.write_html('result/'+s+'.html')
         fig.show()
-    return
+    fig.write_html('result/'+s+'.html')
+    return t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, candle_score
 
 '''
     fig.update_layout(

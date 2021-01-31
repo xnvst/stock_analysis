@@ -7,7 +7,7 @@ from alpha_vantage.techindicators import TechIndicators
 from quote_data import *
 from plot import *
 
-def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 1):
+def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 0):
     t1 = []
     t2 = []
     t3 = []
@@ -15,22 +15,26 @@ def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 1):
     dea = []
     mfi = []
     macd_hist = []
+    macd_str = ''
+    t2_str = ''
+    t3_str = ''
     if en_macd:
-        t1, dfi, dea, macd_hist = macd_analysis(symbol)
+        t1, dfi, dea, macd_hist, macd_str = macd_analysis(symbol)
     if en_pv:
-        t2 = price_volume_analysis(symbol)
+        t2, t2_str = price_volume_analysis(symbol)
     if en_mfi:
-        t3, mfi = mfi_analysis(symbol)
-    return t1, dfi, dea, macd_hist, t2, t3, mfi
+        t3, mfi, t3_str = mfi_analysis(symbol)
+    K, D, J = kdj_analysis(symbol)
+    return t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J
 
-def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0):
+def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0, fastperiod=6, slowperiod=13, signalperiod=5):
     symbol_file = 'data/' + symbol + '_macd.csv'
 
     if Path(symbol_file).is_file():
         if append == 1:
             at = TechIndicators(key, output_format='pandas')
             try:
-                data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
+                data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
             except:
                 print("macd_analysis exception")
             api_delay(key_cnt)
@@ -81,8 +85,31 @@ def collect_mfi_data(symbol, append = 0, print_debug = 0, key_cnt = 0):
         write_csv(symbol_file, data)
     return symbol_file
 
+def kdj_analysis(symbol):
+    file = collect_quote(symbol, append = 0)
+    quotes = pd.read_csv(file)
+    df = pd.DataFrame(quotes)
+
+    op = df['1. open']
+    hi = df['2. high']
+    lo = df['3. low']
+    close = df['4. close']
+    volume = df['5. volume']
+
+    low_list = lo.rolling(9, min_periods=9).min()
+    low_list.fillna(value = lo.expanding().min(), inplace = True)
+    high_list = hi.rolling(9, min_periods=9).max()
+    high_list.fillna(value = hi.expanding().max(), inplace = True)
+    rsv = (close - low_list) / (high_list - low_list) * 100
+
+    df['K'] = pd.DataFrame(rsv).ewm(com=2).mean()
+    df['D'] = df['K'].ewm(com=2).mean()
+    df['J'] = 3 * df['K'] - 2 * df['D']
+    return df['K'], df['D'], df['J']
+
 def macd_analysis(symbol):
     tenhnical_cnt_list = []
+    macd_str = []
 
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
@@ -102,56 +129,79 @@ def macd_analysis(symbol):
         #date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
         if past_days < total_past_days + 1:
             tenhnical_cnt = 0
+            w_str = ''
 
             flag1 = 0
             if dfi[past_days] > 0 and dea[past_days] > 0:
                 if macd_hist[past_days] > 0 and macd_hist[past_days+1] < 0:
-                    print('macd bull 1.1: 金叉')
+                    w = 'macd bull 1.1: 金叉'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt += 2
                     flag1 = 1
                 elif dfi[past_days] > dfi[past_days+1] and dea[past_days] > dea[past_days+1]:
-                    print('macd bull 1.2: 多头行情中,可以买入或持股')
+                    w = 'macd bull 1.2: 多头行情中,可以买入或持股'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt += 0.5
                     flag1 = 1
                 elif dfi[past_days] < dfi[past_days+1] and dea[past_days] < dea[past_days+1]:
-                    print('macd bear 1.3: 退潮阶段,股票将下跌,可以卖出股票和观望')
+                    w = 'macd bear 1.3: 退潮阶段,股票将下跌,可以卖出股票和观望'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt -= 1
                     flag1 = 1
             elif dfi[past_days] < 0 and dea[past_days] < 0:
                 if macd_hist[past_days] < 0 and macd_hist[past_days+1] > 0:
-                    print('macd bear 1.1: 死叉')
+                    w = 'macd bear 1.1: 死叉'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt -= 2
                     flag1 = 1
                 elif macd_hist[past_days] > 0 and macd_hist[past_days+1] < 0:
-                    print('macd bull 1.3: 金叉2')
+                    w = 'macd bull 1.3: 金叉2'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt += 1.5
                     flag1 = 1
                 elif dfi[past_days] < dfi[past_days+1] and dea[past_days] < dea[past_days+1]:
-                    print('macd bear 1.2: 空头行情中,可以卖出股票或观望')
+                    w = 'macd bear 1.2: 空头行情中,可以卖出股票或观望'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt -= 0.5
                     flag1 = 1
                 elif dfi[past_days] > dfi[past_days+1] and dea[past_days] > dea[past_days+1]:
-                    print('macd bull 1.4: 行情即将启动,股票将上涨,可以买进股票或持股待涨')
+                    w = 'macd bull 1.4: 行情即将启动,股票将上涨,可以买进股票或持股待涨'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt += 1
                     flag1 = 1
 
             flag2 = 0
             if macd_hist[past_days] > 0 and macd_hist[past_days+1] > 0:
                 if macd_hist[past_days] < macd_hist[past_days+1]:
-                    print('macd bear 2.1: 红柱状缩小,进入调整期')
+                    w = 'macd bear 2.1: 绿柱状缩小,进入调整期'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt -= 0.5
                     flag2 = 1
                 elif macd_hist[past_days] > macd_hist[past_days+1]:
-                    print('macd bull 2.1: 当红柱状持续放大时,表明股市处于牛市行情中,股价将继续上涨')
+                    w = 'macd bull 2.1: 当绿柱状持续放大时,表明股市处于牛市行情中,股价将继续上涨'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt += 1
                     flag2 = 1
             elif macd_hist[past_days] < 0 and macd_hist[past_days+1] < 0:
                 if macd_hist[past_days] < macd_hist[past_days+1]:
-                    print('macd bear 2.2: 当绿柱状持续放大时,表明股市处于熊市行情之中,股价将继续下跌')
+                    w = 'macd bear 2.2: 当红柱状持续放大时,表明股市处于熊市行情之中,股价将继续下跌'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt -= 1
                     flag2 = 1
                 elif macd_hist[past_days] > macd_hist[past_days+1]:
-                    print('macd bull 2.2: 当绿柱状开始收缩时,表明股市的大跌行情即将结束,股价将止跌向上或进入盘整')
+                    w = 'macd bull 2.2: 当红柱状开始收缩时,表明股市的大跌行情即将结束,股价将止跌向上或进入盘整'
+                    print(w)
+                    w_str += str(w + ';\n')
                     tenhnical_cnt -= 0.5
                     flag2 = 1
 
@@ -171,11 +221,15 @@ def macd_analysis(symbol):
                     top_diverge = 0
                     pass
             if bottom_diverge:
-                print('macd bull caution!!! 底背离 buy')
+                w = 'macd bull caution!!! 底背离 buy'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt += 2
                 flag3 = 1
             if  top_diverge:
-                print('macd bear caution!!! 顶背离 sell')
+                w = 'macd bear caution!!! 顶背离 sell'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt -= 2
                 flag3 = 1
 
@@ -189,16 +243,21 @@ def macd_analysis(symbol):
                     print(df.loc[df.index[past_days]]['date'])
                     print('macd tenhnical_cnt: ' + str(tenhnical_cnt))
                 print('----------------------------------------\n')
+                macd_str.append(w_str)
                 pass
 
             tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
 
-    return tenhnical_cnt_list, dfi, dea, macd_hist
+    if not macd_str:
+        macd_str = ['']
+
+    return tenhnical_cnt_list, dfi, dea, macd_hist, macd_str[0]
 
 
 def price_volume_analysis(symbol):
     tenhnical_cnt_list = []
+    data_str = []
 
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
@@ -236,6 +295,7 @@ def price_volume_analysis(symbol):
         #date = datetime.strftime(datetime.now() - timedelta(past_days), '%Y-%m-%d')
         tenhnical_cnt = 0
         flag = 0
+        w_str = ''
 
         price_up = close[past_days] > short_close_mean * (1+price_alpha) and close[past_days] > long_close_mean * (1+price_alpha)
         price_similar = short_close_mean < long_close_mean * (1+volume_alpha) and short_close_mean > long_close_mean * (1-volume_alpha)
@@ -250,46 +310,66 @@ def price_volume_analysis(symbol):
 
         if vol_up:
             if price_up:
-                print('量增价升，一定进场')
+                w = '量增价升，一定进场'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt += 2
                 flag = 1
             elif price_similar:
-                print('量增价平，高位走人')
+                w = '量增价平，高位走人'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt -= 0.5
                 flag = 1
             elif price_down:
-                print('量增价跌，走为上策')
+                w = '量增价跌，走为上策'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt -= 2
                 flag = 1
         elif vol_down:
             if price_up:
-                print('量减价升，提高警惕')
+                w = '量减价升，提高警惕'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt -= 0.5
                 flag = 1
             elif price_similar:
-                print('量减价平，提高警戒')
+                w = '量减价平，提高警戒'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt -= 0.5
                 flag = 1
             elif price_down:
-                print('量减价跌，天天要跌')
+                w = '量减价跌，天天要跌'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt -= 2
                 flag = 1
 
         if high_position:
             if vol_up:
-                print('高位放量就要跑，跑错也要跑')
+                w = '高位放量就要跑，跑错也要跑'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt -= 1
                 flag = 1
             else:
-                print('高位无量就要拿，拿错也要拿')
+                w = '高位无量就要拿，拿错也要拿'
+                print(w)
+                w_str += str(w + ';\n')
                 flag = 1
         elif low_position:
             if vol_up:
-                print('低位放量就要跟,跟错也要跟')
+                w = '低位放量就要跟,跟错也要跟'
+                print(w)
+                w_str += str(w + ';\n')
                 tenhnical_cnt += 1
                 flag = 1
             else:
-                print('低位无量就要等,等错也要等')
+                w = '低位无量就要等,等错也要等'
+                print(w)
+                w_str += str(w + ';\n')
                 flag = 1
 
         if flag:
@@ -301,6 +381,7 @@ def price_volume_analysis(symbol):
                 print(df.loc[df.index[past_days]])
                 print('price_volume_analysis tenhnical_cnt: ' + str(tenhnical_cnt))
             print('----------------------------------------\n')
+            data_str.append(w_str)
 
         tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
@@ -316,7 +397,10 @@ def price_volume_analysis(symbol):
             print('----------------------------------------\n')
             past_days = past_days + 1
 
-    return tenhnical_cnt_list
+    if not data_str:
+        data_str = ['']
+
+    return tenhnical_cnt_list, data_str[0]
 
 
 '''
@@ -359,6 +443,7 @@ def price_volume_analysis(symbol):
 
 def mfi_analysis(symbol):
     tenhnical_cnt_list = []
+    data_str = []
 
     file = collect_quote(symbol, append = 0)
     quotes = pd.read_csv(file)
@@ -402,6 +487,7 @@ def mfi_analysis(symbol):
     while past_days < total_past_days + 1:
         tenhnical_cnt = 0
         flag = 0
+        w_str = ''
 
 #if prive > 200MA ignore sell
 #if price < 200MA ignore buy
@@ -413,20 +499,28 @@ def mfi_analysis(symbol):
             ignore_buy = 1
 
         if mfi[past_days] > 80 and not(ignore_sell):
-            print('MFI 超买')
+            w = ('MFI 超买')
+            print(w)
+            w_str += str(w + ';\n')
             tenhnical_cnt -= 0.5
             flag = 1
         elif mfi[past_days] < 20 and not(ignore_buy):
-            print('MFI 超卖')
+            w = ('MFI 超卖')
+            print(w)
+            w_str += str(w + ';\n')
             tenhnical_cnt += 0.5
             flag = 1
 
         if (mfi[past_days+1] > 80 or high_position) and mfi[past_days] < 80 and not(ignore_sell):
-            print('MFI short trade')
+            w = ('MFI short trade')
+            print(w)
+            w_str += str(w + ';\n')
             tenhnical_cnt -= 1
             flag = 1
         elif (mfi[past_days+1] < 20 or low_position) and mfi[past_days] > 20 and not(ignore_buy):
-            print('MFI long trade')
+            w = ('MFI long trade')
+            print(w)
+            w_str += str(w + ';\n')
             tenhnical_cnt += 1
             flag = 1
 
@@ -440,9 +534,12 @@ def mfi_analysis(symbol):
                 print(df_mfi.loc[df_mfi.index[past_days]]['date'])
                 print('mfi tenhnical_cnt: ' + str(tenhnical_cnt))
             print('----------------------------------------\n')
+            data_str.append(w_str)
 
         tenhnical_cnt_list.append(tenhnical_cnt)
         past_days = past_days + 1
 
+    if not data_str:
+        data_str = ['']
 
-    return tenhnical_cnt_list, mfi
+    return tenhnical_cnt_list, mfi, data_str[0]

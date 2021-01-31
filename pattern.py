@@ -16,6 +16,8 @@ def candle_pattern_list():
 
 def candle_pattern_recognition(s, enable_plot = 0):
     file = collect_quote(s, append = 0)
+    w_str = ''
+    score = 0
 
     quotes = pd.read_csv(file)
 
@@ -82,24 +84,24 @@ def candle_pattern_recognition(s, enable_plot = 0):
         for index, row in df.iterrows():
             if df.loc[index, 'date'] == date and df.loc[index, 'candlestick_pattern'] != 'NO_PATTERN':
                 if past_days == 0:
-                    print('********' + date + '********')
+                    w = str('********' + date + '********')
+                    print(w)
+                    w_str += str(w + ';\n')
+                    if '_Bull' in str(df.loc[index, 'candlestick_pattern']):
+                        score += 1
+                    elif '_Bear' in str(df.loc[index, 'candlestick_pattern']):
+                        score -= 1
                 else:
-                    print(date)
-                print(row)
-                print('candlestick_pattern ranking: ' + str(candle_rankings[df.loc[index, 'candlestick_pattern']]))
+                    w = str(date)
+                    print(w)
+                    w_str += str(w + ';\n')
+                w = str(row)
+                print(w)
+                w_str += str(w + ';\n')
+                w = str('candlestick_pattern ranking: ' + str(candle_rankings[df.loc[index, 'candlestick_pattern']]))
+                print(w)
+                w_str += str(w + ';\n')
                 print('----------------------------------------\n')
                 pass
-#    print(s + ' ^_^\n')
 
-    fig = 0
-    if 0 and enable_plot > 0:
-        trace = go.Candlestick(
-                    x = df['date'],
-                    open=op,
-                    high=hi,
-                    low=lo,
-                    close=cl)
-        fig = go.Figure([trace])
-        #plot([trace], s+'.html')
-
-    return
+    return w_str, score
