@@ -24,8 +24,8 @@ def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 0):
         t2, t2_str = price_volume_analysis(symbol)
     if en_mfi:
         t3, mfi, t3_str = mfi_analysis(symbol)
-    K, D, J = kdj_analysis(symbol)
-    return t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J
+    K, D, J, t4 = kdj_analysis(symbol)
+    return t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J, t4
 
 def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0, fastperiod=6, slowperiod=13, signalperiod=5):
     symbol_file = 'data/' + symbol + '_macd.csv'
@@ -105,7 +105,56 @@ def kdj_analysis(symbol):
     df['K'] = pd.DataFrame(rsv).ewm(com=2).mean()
     df['D'] = df['K'].ewm(com=2).mean()
     df['J'] = 3 * df['K'] - 2 * df['D']
-    return df['K'], df['D'], df['J']
+
+    past_days = 0
+    for index, row in df.iterrows():
+        if past_days < 1:
+            tenhnical_cnt = 0
+            flag = 0
+            if df['J'][past_days] > df['J'][past_days+1] and df['J'][past_days+1] < df['J'][past_days+2]:
+                tenhnical_cnt += 1
+                flag = 1
+                print('kdj 1.1')
+            if df['J'][past_days] > df['K'][past_days] and df['J'][past_days] > df['D'][past_days]:
+                tenhnical_cnt += 1
+                flag = 1
+                print('kdj 1.2')
+            if df['J'][past_days] > df['J'][past_days+1]:
+                if df['K'][past_days] > df['K'][past_days+1]:
+                    if df['D'][past_days] > df['D'][past_days+1]:
+                        tenhnical_cnt += 1
+                        flag = 1
+                        print('kdj 1.3')
+            if df['J'][past_days] < df['J'][past_days+1] and df['J'][past_days+1] > df['J'][past_days+2]:
+                tenhnical_cnt -= 1
+                flag = 1
+                print('kdj 2.1')
+            if df['J'][past_days] < df['K'][past_days] and df['J'][past_days] < df['D'][past_days]:
+                tenhnical_cnt -= 1
+                flag = 1
+                print('kdj 2.2')
+            if df['J'][past_days] < df['J'][past_days+1]:
+                if df['K'][past_days] < df['K'][past_days+1]:
+                    if df['D'][past_days] < df['D'][past_days+1]:
+                        tenhnical_cnt -= 1
+                        flag = 1
+                        print('kdj 2.3')
+
+            if flag:
+                if past_days == 0:
+                    print('********' + df.loc[df.index[past_days]]['date'] + '************************')
+                    print(row)
+                    print(df.loc[past_days])
+                    print('kdj tenhnical_cnt: ' + str(tenhnical_cnt))
+                else:
+                    print(df.loc[df.index[past_days]]['date'])
+                    print('kdj tenhnical_cnt: ' + str(tenhnical_cnt))
+                print('----------------------------------------\n')
+                pass
+
+        past_days = past_days + 1
+
+    return df['K'], df['D'], df['J'], tenhnical_cnt
 
 def macd_analysis(symbol):
     tenhnical_cnt_list = []

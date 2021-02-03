@@ -46,12 +46,12 @@ def all_symbol_analysis():
     technical_list = []
     for s in my_symbols:
         print('\n\n$$$----------------------------------------')
-        t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, candle_score = single_analysis(s, en_plot = 0)
+        t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, candle_score, t4 = single_analysis(s, en_plot = 0)
         print("symbol, macd, price_volume, mfi: \n" + s + ', ' + str(t1) + ', ' + str(t2) + ', ' + str(t3)+ ', ' + str(candle_score))
-        technical_list.append((s, t1, t2, t3, candle_score))
+        technical_list.append((s, t1, t2, t3, candle_score, t4))
         print('###----------------------------------------\n\n')
     #technical_list.sort(key = (lambda elem : (elem[1][0] + elem[2][0] + elem[3][0] + elem[4])), reverse=True)
-    technical_list.sort(key = (lambda elem : (elem[1][0] + elem[2][0] + elem[4])), reverse=True)
+    technical_list.sort(key = (lambda elem : (elem[1][0] + elem[2][0] + elem[4] + elem[5])), reverse=True)
     print("symbol, macd, price_volume, mfi\n")
     for x in range(len(technical_list)):
         print(technical_list[x])
@@ -124,7 +124,7 @@ def single_analysis(s, en_plot = 1):
             )
 
     candle_str, candle_score = candle_pattern_recognition(s)
-    t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J = technical_analysis(s)
+    t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J, t4 = technical_analysis(s)
 
     data1 = go.Bar(
             x=df['date'],
@@ -207,7 +207,7 @@ def single_analysis(s, en_plot = 1):
             x=df['date'],
             y=D,
             name='D',
-            marker=dict(color='blue'),
+            marker=dict(color='green'),
             )
     data_J = go.Scatter(
             x=df['date'],
@@ -274,7 +274,7 @@ def single_analysis(s, en_plot = 1):
     if en_plot:
         fig.show()
     fig.write_html('result/'+s+'.html')
-    return t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, candle_score
+    return t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, candle_score, t4
 
 '''
     fig.update_layout(
