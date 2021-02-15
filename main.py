@@ -30,7 +30,7 @@ def all_collect_quotes():
     for s in my_symbols:
         # step 1 - collect quote
         print(s)
-        #if s != 'BMO' and keycnt == 0:
+        #if s != 'SE' and keycnt == 0:
         #    continue
         #else:
         #    pass
@@ -78,11 +78,14 @@ def single_analysis(s, en_plot = 1):
                 low=lo,
                 close=cl)
 
+    sma_5 = []
     sma_10 = []
     sma_20 = []
     sma_50 = []
     sma_200 = []
     for i in range(180):
+        x = np.mean(cl[i:5-1+i])
+        sma_5.append(x)
         x = np.mean(cl[i:10-1+i])
         sma_10.append(x)
         x = np.mean(cl[i:20-1+i])
@@ -91,6 +94,12 @@ def single_analysis(s, en_plot = 1):
         sma_50.append(x)
         x = np.mean(cl[i:200-1+i])
         sma_200.append(x)
+    data_sma_5 = go.Scatter(
+            x=df['date'],
+            y=sma_5,
+            name='sma_5',
+            marker=dict(color='brown'),
+            )
     data_sma_10 = go.Scatter(
             x=df['date'],
             y=sma_10,
@@ -101,7 +110,7 @@ def single_analysis(s, en_plot = 1):
             x=df['date'],
             y=sma_20,
             name='sma_20',
-            marker=dict(color='purple'),
+            marker=dict(color='green'),
             )
     data_sma_50 = go.Scatter(
             x=df['date'],
@@ -124,7 +133,7 @@ def single_analysis(s, en_plot = 1):
             )
 
     candle_str, candle_score = candle_pattern_recognition(s)
-    t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J, t4 = technical_analysis(s)
+    t1, dfi, dea, macd_hist, t2, t3, mfi, macd_str, t2_str, t3_str, K, D, J, t4, t4_str = technical_analysis(s)
 
     data1 = go.Bar(
             x=df['date'],
@@ -220,6 +229,7 @@ def single_analysis(s, en_plot = 1):
 
     fig = make_subplots(rows=8, cols=1)
     fig.add_trace(trace, row=1, col=1)
+    fig.add_trace(data_sma_5, row=1, col=1)
     fig.add_trace(data_sma_10, row=1, col=1)
     fig.add_trace(data_sma_20, row=1, col=1)
     fig.add_trace(data_sma_50, row=1, col=1)
@@ -246,7 +256,8 @@ def single_analysis(s, en_plot = 1):
 
     fig.add_trace(data1, row=8, col=1)
 
-    text_str = 'macd: ' + macd_str+' \nprice_volume: '+t2_str+' \nmfi: '+t3_str+' \ncandle: '+candle_str
+    text_str = 'macd: ' + macd_str+' \nprice_volume: '+t2_str+' \nmfi: '+t3_str
+    text_str2 = 'kdj: '+t4_str+' \ncandle: '+candle_str
     fig.update_layout(
         title=s,
         height=1200,
@@ -257,7 +268,10 @@ def single_analysis(s, en_plot = 1):
         #    line_width=2)],
         annotations=[dict(
             x=0, y=-0.05, xref='paper', yref='paper',
-            showarrow=False, xanchor='left', text=text_str)]
+            showarrow=False, xanchor='left', text=text_str),
+            dict(
+            x=0, y=-0.07, xref='paper', yref='paper',
+            showarrow=False, xanchor='left', text=text_str2)]
     )
 
     h1 = 0.12

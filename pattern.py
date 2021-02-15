@@ -97,7 +97,7 @@ def candle_pattern_recognition(s, enable_plot = 0):
                     w_str += str(w + ';\n')
                 w = str(row)
                 print(w)
-                w_str += str(w + ';\n')
+                #w_str += str(w + ';\n')
                 w = str('candlestick_pattern ranking: ' + str(candle_rankings[df.loc[index, 'candlestick_pattern']]))
                 print(w)
                 w_str += str(w + ';\n')

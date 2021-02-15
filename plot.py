@@ -8,8 +8,9 @@ import pandas as pd
 from matplotlib.dates import MONDAY, DateFormatter, DayLocator, WeekdayLocator
 from matplotlib.dates import DateFormatter
 
-import mpl_finance as mpf
-from mpl_finance import candlestick_ohlc
+import mplfinance as mpf
+#from mplfinance import candlestick_ohlc
+from mplfinance.original_flavor import candlestick_ohlc
 
 import numpy
 
