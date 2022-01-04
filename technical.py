@@ -7,7 +7,7 @@ from alpha_vantage.techindicators import TechIndicators
 from quote_data import *
 from plot import *
 
-def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 0):
+def technical_analysis(symbol, en_macd = 0, en_pv = 1, en_mfi = 0):
     t1 = []
     t2 = []
     t3 = []
@@ -31,6 +31,8 @@ def technical_analysis(symbol, en_macd = 1, en_pv = 1, en_mfi = 0):
 def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0, fastperiod=6, slowperiod=13, signalperiod=5):
     symbol_file = 'data/' + symbol + '_macd.csv'
 
+    return symbol_file  # become premium service
+
     if Path(symbol_file).is_file():
         if append == 1:
             at = TechIndicators(key, output_format='pandas')
@@ -49,7 +51,7 @@ def collect_macd_data(symbol, append = 0, print_debug = 0, key_cnt = 0, fastperi
     else:
         at = TechIndicators(key, output_format='pandas')
         try:
-            data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=12, slowperiod=26, signalperiod=9)
+            data, meta_data = at.get_macd(symbol, interval='daily', series_type='close', fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
         except:
             print("macd_analysis exception")
         api_delay(key_cnt)
